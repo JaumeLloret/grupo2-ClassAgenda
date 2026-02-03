@@ -7,7 +7,7 @@ Aplicación web de agenda colaborativa desarrollada sin frameworks.
 
 ## 👥 Equipo
 
-- Alumno/a 1:  
+- Alumno/a 1:  Beatriz
 - Alumno/a 2:  
 - Alumno/a 3:  
 
