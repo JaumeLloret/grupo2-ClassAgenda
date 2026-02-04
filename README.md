@@ -92,7 +92,7 @@ Ejemplo:
 
 ---
 
-## 📘 Modelo de Datos — ClassAgenda (Sprint 0)
+## 📘 Modelo de Datos
 
 Descripción general:
 
