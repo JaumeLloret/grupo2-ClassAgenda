@@ -61,10 +61,37 @@ X-User-Id: <id_del_usuario>
 
 ## 🧱 Arquitectura del proyecto
 
-> Describir aquí la estructura de carpetas y la arquitectura utilizada.
+> /api
+    Controladores REST. Reciben las peticiones HTTP, validan datos
+    y llaman a los casos de uso de la capa application.
 
-Ejemplo:
-```
+/presentation
+    Cliente web: HTML, CSS y JavaScript. Interfaz de usuario que consume la API.
+
+/application
+    Casos de uso. Contienen la lógica de orquestación entre dominio e infraestructura.
+    Aquí se aplican reglas de aplicación y se coordinan las operaciones.
+
+/domain
+    Entidades, modelos y lógica de negocio pura. No depende de otras capas.
+    Representa el corazón del sistema (Task, Event, User, Permission…).
+
+/infrastructure
+    Implementaciones técnicas: repositorios JDBC, conexión a SQL Server,
+    mapeadores y adaptadores. Aquí vive todo lo que depende de tecnología concreta.
+
+/client
+    Código del cliente web si se separa de /presentation (opcional).
+    Puede contener componentes, servicios o scripts organizados por módulos.
+
+/database
+    Scripts SQL, diagramas E‑R, esquema relacional y datos de prueba.
+    Incluye la definición de tablas y la estructura de la base de datos.
+
+/docs
+    Documentación del proyecto: decisiones técnicas, endpoints, pruebas,
+    evidencias, configuración de la máquina virtual y cualquier material adicional.
+
 /api
   /presentation
   /application
@@ -73,9 +100,6 @@ Ejemplo:
 /client
 /database
 /docs
-```
-
----
 
 ## 🗄️ Base de datos
 
