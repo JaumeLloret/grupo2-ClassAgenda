@@ -119,11 +119,63 @@ evidencias, configuración de la máquina virtual y cualquier material adicional
   - TASK_SHARES
   - EVENT_SHARES
 
-📌 **Pendiente**:  
-- Esquema relacional  
-- Diagrama E-R  
-- Scripts SQL  
+### Esquema relacional
+USERS
+  * id INT - PRIMARY KEY, IDENTITY
+  * name VARCHAR(80) - NOT NULL
+  * email VARCHAR(255) - UNIQUE, NOT NULL
+  * created_at DATETIME - DEFAULT GETDATE()
 
+EVENTS
+  * id INT -PRIMARY KEY, IDENTITY
+  * owner_user_id INT - FOREIGN KEY →  USERS(id)
+  * title VARCHAR(120) - NOT NULL
+  * description VARCHAR(1000)
+  * start_at DATETIME - NOT NULL
+  * end_at DATETIME - NOT NULL
+  * event_type VARCHAR(12) - NOT NULL
+  * created-at DATETIME -DEFAULT GETDATE()
+  CONSTRAINT
+  * FK(owner_user_id) → USERS(id)
+
+TASKS
+  * id INT - PRIMARY KEY, IDENTITY
+  * owner_user_id INT - FOREIGN KEY → USERS(id)
+  * title VARCHAR(120) - NOT NULL
+  * description VARCHAR(1000)
+  * due_date DATETIME
+  * status VARCHAR(10)
+  * priority VARCHAR(6)
+  * created_at DATETIME - DEFAULT GETDATE()
+  CONSTRAINT
+  *FK(owner_user_id) → USERS(id)
+
+EVENT_SHARES
+  * event_id INT - FOREIGN KEY → EVENTS(id)
+  * shared_with_user_id INT - FOREIGN KEY → USERS(id)
+  * permission VARCHAR(10)
+  * shared_at DATETIME - DEFAULT GETDATE()
+  CONSTRAINT
+  * PRIMARY KEY (event_id, shared_with_useer_id)
+  * FK(event_id) → EVENTS(id)
+  * FK(shared_with_user_id) → USERS(id)
+
+TASK_SHARES
+  * task_id INT -FOREIGN KEY → TASKS(id)
+  * shared_with_user_id INT -FOREIGN KEY → USERS(id)
+  * permission VARCHAR(10)
+  * shared_at DATETIME - DEFAULT GETDATE()
+  CONSTRAINT
+  * PRIMARY KEY (task_id, shared_with_user_id)
+  * FK(task_id) → TASKS(id)
+  * FK(shared_with_user_id) → USERS(id)
+
+
+📌 **Pendiente**:  
+- Diagrama E-R
+- Scripts SQL  
+  * [01_schema_sql](https://github.com/JaumeLloret/grupo2-ClassAgenda/blob/feature/database/database/01_schema.sql)
+  * [02_seed_sql](https://github.com/JaumeLloret/grupo2-ClassAgenda/blob/feature/database/database/01_schema.sql)
 ---
 
 ## 📘 Modelo de Datos
