@@ -35,16 +35,16 @@ INSERT INTO TASKS (owner_user_id, title, [description], due_date, [status], [pri
 --  INSERT: EVENT_SHARES
 -- ===============================
 INSERT INTO EVENT_SHARES (event_id, shared_with_user_id, permission) VALUES
-(6, 2, 'read'),
-(7, 3, 'edit'),
-(8, 1, 'read'),
-(9, 4, 'read');
+(1, 2, 'read'),
+(2, 3, 'edit'),
+(3, 1, 'read'),
+(4, 4, 'read');
 
 -- ================================
 -- INSERT:TASK_SHARES
 -- ================================
 INSERT INTO TASK_SHARES (task_id, shared_with_user_id, permission) VALUES
-(3, 2, 'edit'),
-(4, 3, 'read'),
-(5, 1, 'read'),
-(6, 4, 'edit');
+(1, 2, 'edit'),
+(2, 3, 'read'),
+(3, 1, 'read'),
+(4, 4, 'edit');
