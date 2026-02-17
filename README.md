@@ -16,19 +16,19 @@
 
 ## 📑 Índice
 
-1. [Descripción del proyecto](#descripción-del-proyecto)
-2. [Tecnologías usadas](#tecnologías-usadas)
-3. [Restricciones](#restricciones)
-4. [Arquitectura del proyecto](#arquitectura-del-proyecto)
-5. [Bases de datos](#bases-de-datos)
-6. [Modelo de datos](#modelo-de-datos)
-7. [API REST](#api-rest)
-8. [Cliente web](#cliente-web)
-9. [Máquina virtual (Servidor)](#máquina-virtual-servidor)
-10. [Pruebas](#pruebas)
-11. [Metodología de trabajo](#metodología-de-trabajo)
-12. [Estado del proyecto](#estado-del-proyecto)
-13. [Notas finales](#notas-finales)
+1. [Descripción del proyecto](#-descripción-del-proyecto)
+2. [Tecnologías utilizadas](#-tecnologías-utilizadas)
+3. [Restricciones](#-restricciones)
+4. [Arquitectura del proyecto](#-arquitectura-del-proyecto)
+5. [Base de datos](#-base-de-datos)
+6. [Modelo de datos](#-modelo-de-datos)
+7. [API REST](#-api-rest)
+8. [Cliente web](#-cliente-web)
+9. [Máquina virtual (Servidor)](#-máquina-virtual-servidor)
+10. [Pruebas](#-pruebas)
+11. [Metodología de trabajo](#-metodología-de-trabajo)
+12. [Estado del proyecto](#-estado-del-proyecto)
+13. [Notas finales](#-notas-finales)
 
 ---
 
