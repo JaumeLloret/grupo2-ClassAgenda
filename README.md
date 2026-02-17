@@ -120,7 +120,7 @@ X-User-Id: <id_del_usuario>
 | **TASK_SHARES**  | task_id (FK → TASKS.id)<br>shared_with_user_id (FK → USERS.id)<br>permission VARCHAR(10)<br>shared_at DATETIME DEFAULT GETDATE()<br>PRIMARY KEY (task_id, shared_with_user_id) | Compartición de tareas entre usuarios. |
 
 ## Diagrama E-R
-  ![Diagrama E-R](docs/Diagrama E-R.png)
+  ![Diagrama E-R](docs/Diagrama-E-R.png)
   
 ## Scripts SQL  
   * [01_schema_sql](https://github.com/JaumeLloret/grupo2-ClassAgenda/blob/feature/database/database/01_schema.sql)
