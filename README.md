@@ -171,7 +171,7 @@ TASK_SHARES
   * FK(shared_with_user_id) → USERS(id)
 
 ### Diagrama E-R
-  ![Diagrama E-R] (https://github.com/JaumeLloret/grupo2-ClassAgenda/blob/feature/database/database/Diagrama%20E-R.png)
+  ![Diagrama E-R](https://github.com/JaumeLloret/grupo2-ClassAgenda/blob/feature/database/database/Diagrama%20E-R.png)
   
 ### Scripts SQL  
   * [01_schema_sql](https://github.com/JaumeLloret/grupo2-ClassAgenda/blob/feature/database/database/01_schema.sql)
