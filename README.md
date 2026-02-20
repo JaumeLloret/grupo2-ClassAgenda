@@ -10,7 +10,7 @@
 - Alumno/a 2:  José Manuel Ruiz Sojo (Chema)
 - Alumno/a 3:  Alfonso Daniel Perucho Domínguez
 - Alumno/a 4: Bruno Regueira Ayuso
-- Alumno/a 5:
+- Alumno/a 5: César  Enrique Pozo Vasquez 
 
 ---
 
