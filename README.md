@@ -123,8 +123,8 @@ X-User-Id: <id_del_usuario>
   ![Diagrama E-R](docs/Diagrama-E-R.png)
   
 ## Scripts SQL  
-  * [01_schema_sql](https://github.com/JaumeLloret/grupo2-ClassAgenda/blob/feature/database/database/01_schema.sql)
-  * [02_seed_sql](https://github.com/JaumeLloret/grupo2-ClassAgenda/blob/feature/database/database/02_seed.sql)
+  * [01_schema_sql](database/01_schema.sql)
+  * [02_seed_sql](database/02_seed.sql)
 ---
 
 ## 📘 Modelo de Datos

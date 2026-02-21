@@ -35,7 +35,12 @@
 
   <build>
     <plugins>
-      <!-- Para ejecutar JUnit 5 correctamente -->
+        <!-- Para ejecutar JUnit 5 correctamente -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-wrapper-plugin</artifactId>
+        <version>3.1.1</version>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
