@@ -156,6 +156,20 @@ Relaciones principales:
 
 ---
 
+## 🔌 Configuración JDBC
+
+**Mi URL JDBC es:**
+jdbc:sqlserver://localhost:1433;databaseName=ClassAgenda;encrypt=false;trustServerCertificate=true
+
+**Mi host es:**
+- localhost: porque el SQL Server está configurado para ejecutarse en la máquina local (o en la VM del proyecto).
+ 
+**Mi SQL Server está en:**
+
+-PC / VM
+
+---
+
 ## 🌐 API REST
 
 📌 **Pendiente**:  
