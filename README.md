@@ -72,30 +72,56 @@ El proyecto integra contenidos de Programación, Bases de Datos, Sistemas Inform
 ```
 X-User-Id: <id_del_usuario>
 ```
-
 ## 🧱 Arquitectura del proyecto
 
-
-| Capa               | Descripción |
-|--------------------|-------------|
-| **/api**           | Controladores REST. Reciben las peticiones HTTP, validan datos y llaman a los casos de uso de la capa *application*. |
-| **/presentation**  | Cliente web: HTML, CSS y JavaScript. Interfaz de usuario que consume la API. |
-| **/application**   | Casos de uso. Contienen la lógica de orquestación entre dominio e infraestructura. Aplican reglas de aplicación y coordinan operaciones. |
-| **/domain**        | Entidades, modelos y lógica de negocio pura. No depende de otras capas. Representa el corazón del sistema (Task, Event, User, Permission…). |
-| **/infrastructure**| Implementaciones técnicas: repositorios JDBC, conexión a SQL Server, mapeadores y adaptadores. Todo lo dependiente de tecnología concreta. |
-| **/client**        | Código del cliente web si se separa de *presentation*. Puede contener componentes, servicios o scripts organizados por módulos. |
-| **/database**      | Scripts SQL, diagramas E‑R, esquema relacional y datos de prueba. Incluye la definición de tablas y la estructura de la base de datos. |
-| **/docs**          | Documentación del proyecto: decisiones técnicas, endpoints, pruebas, evidencias, configuración de la máquina virtual y material adicional. |
-
 ```
-/api
-  /presentation
-  /application
-  /domain
-  /infrastructure
-/client
-/database
-/docs
+src/main/java/com/classagendag2/
+│
+├── di/
+│   └── Configuración de dependencias
+│
+├── features/
+│   └── example/
+│       ├── data/
+│       │   └── local/
+│       │       ├── connection/
+│       │       │   ├── DbConnectionFactory.java
+│       │       │   └── DbSmokeTest.java
+│       │       ├── dao/
+│       │       └── entity/
+│       │
+│       ├── mapper/
+│       └── repository/
+│
+├── domain/
+│   ├── model/
+│   ├── repository/
+│   └── usecase/
+│
+├── presentation/
+│   ├── dto/
+│   ├── handlers/
+│   │   └── ExampleIntroHandler.java
+│   └── router/
+│       └── ExampleRouter.java
+│
+├── shared/
+│   ├── config/
+│   │   ├── DbConfig.java
+│   │   └── ServerConfig.java
+│   │
+│   ├── http/
+│   │   ├── handlers/
+│   │   ├── helpers/
+│   │   │   ├── HttpServerBootstrap.java
+│   │   │   ├── JsonResponses.java
+│   │   │   └── ResponseContract.java
+│   │
+│   └── utilities/
+│       └── EnvLoader.java
+│
+└── App.java
+
 ```
 
 ## 🗄️ Base de datos
@@ -156,28 +182,48 @@ Relaciones principales:
 
 ---
 
-## 🔌 Configuración JDBC
-
-**Mi URL JDBC es:**
-jdbc:sqlserver://localhost:1433;databaseName=ClassAgenda;encrypt=false;trustServerCertificate=true
-
-**Mi host es:**
-- localhost: porque el SQL Server está configurado para ejecutarse en la máquina local (o en la VM del proyecto).
- 
-**Mi SQL Server está en:**
-
--PC / VM
-
----
-
 ## 🌐 API REST
 
-📌 **Pendiente**:  
-- Listado de endpoints
-- Ejemplos de peticiones y respuestas
-- Contratos JSON
+### 📌 Estado actual
+La API incluye por ahora un único endpoint funcional que permite verificar que el servidor está operativo.
 
 ---
+
+## 🟦 GET `/example/intro`
+
+Este endpoint devuelve un JSON estándar indicando que el servidor funciona correctamente y mostrando información básica de la petición.
+
+### 📤 Petición
+```http
+GET http://localhost:8080/example/intro
+```
+
+### 📥 Respuesta
+```json
+{
+  "status": "ok",
+  "service": "ClassAgenda",
+  "timestamp": "2026-02-25T12:18:45.918940916Z",
+  "data": {
+    "endpoint": "example/intro",
+    "method": "GET",
+    "message": "GET ok",
+    "receivedBody": null
+  }
+}
+```
+
+---
+
+## 🛠 Endpoints en desarrollo
+El proyecto está preparado para añadir nuevos endpoints en:
+
+```
+shared/http/handlers
+```
+
+A medida que se implementen nuevos handlers y routers, se irán documentando en esta sección.
+
 
 ## 🖥️ Cliente web
 
