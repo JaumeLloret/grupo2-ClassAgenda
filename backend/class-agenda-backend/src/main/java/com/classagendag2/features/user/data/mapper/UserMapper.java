@@ -15,7 +15,7 @@ public final class UserMapper {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                null  //createdAt lo gestiona la BD
+                user.getCreatedAt()
         );
     }
 
@@ -25,7 +25,8 @@ public final class UserMapper {
         return new User(
                 entity.getId(),
                 entity.getName(),
-                entity.getEmail()
+                entity.getEmail(),
+                entity.getCreatedAt()
         );
     }
 }
