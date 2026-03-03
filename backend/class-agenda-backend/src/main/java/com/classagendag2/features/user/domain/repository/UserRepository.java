@@ -6,13 +6,13 @@ import java.util.Optional;
 
 public interface UserRepository {
 
-    User create(User user);
+    User save(User user);
+
+    Optional<User> findByEmail(String email);
 
     Optional<User> findById(Long id);
 
     List<User> findAll();
 
-    User update(User user);
-
-    boolean delete(Long id);
+    void deleteById(Long id);
 }
