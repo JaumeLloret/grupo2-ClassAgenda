@@ -181,11 +181,170 @@ Relaciones principales:
 - Un usuario puede recibir múltiples recursos compartidos(1:N).
 
 ---
-
 ## 🌐 API REST
 
-### 📌 Estado actual
-La API incluye por ahora un único endpoint funcional que permite verificar que el servidor está operativo.
+## 📝 API de Tareas
+
+La API de tareas implementa un CRUD completo siguiendo Arquitectura Limpia, JDBC y control de permisos por usuario mediante la cabecera `X-User-Id`.
+
+---
+
+## 📌 Endpoints principales
+
+### ➕ Crear tarea
+````
+POST /tasks
+Headers:
+X-User-Id: <id_usuario>
+Body:
+{
+"title": "Hacer ejercicio",
+"description": "30 minutos de cardio",
+"priority": "high",
+"scope": "personal"
+}
+````
+
+### 📄 Obtener todas las tareas
+````
+GET /tasks
+Headers:
+X-User-Id: <id_usuario>
+````
+
+### 🔍 Obtener una tarea por ID
+````
+GET /tasks/{id}
+Headers:
+X-User-Id: <id_usuario>
+````
+### ✏️ Actualizar tarea
+````
+PUT /tasks/{id}
+Headers:
+X-User-Id: <id_usuario>
+````
+
+### 🗑️ Borrar tarea
+````
+DELETE /tasks/{id}
+Headers:
+X-User-Id: <id_usuario>
+````
+---
+
+## 🔎 Filtros disponibles
+
+Los filtros se aplican sobre `/tasks`:
+````
+GET /tasks?status=done
+GET /tasks?priority=high
+GET /tasks?scope=school
+````
+Pueden combinarse:
+````
+GET /tasks?status=pending&priority=low
+````
+
+---
+
+## 🔐 Control de permisos OWNER
+
+Cada petición debe incluir:
+````
+X-User-Id: <id_usuario>
+````
+
+La API garantiza:
+
+- Un usuario **solo puede ver, editar o borrar sus propias tareas**.
+- Si intenta acceder a una tarea ajena → **403 Forbidden**.
+
+Ejemplo:
+````
+GET /tasks/12
+X-User-Id: 3
+````
+
+Si la tarea pertenece al usuario 5:
+
+```json
+{ "error": "Forbidden" }
+```
+---
+## 🧪 Pruebas manuales documentadas
+
+### ✔️ Crear tarea
+````
+POST /tasks
+````
+Código esperado: 201
+
+Devuelve la tarea con ID generado.
+
+### ✔️ Listar tareas
+````
+GET /tasks
+````
+Devuelve solo las tareas del usuario del header.
+
+### ✔️ Filtrar tareas
+````
+GET /tasks?priority=high
+````
+Devuelve solo tareas del usuario con prioridad alta.
+
+### ✔️ Obtener tarea por ID
+````
+GET /tasks/{id}
+````
+Si pertenece al usuario → 200
+
+Si NO pertenece → 403 Forbidden
+
+### ✔️ Actualizar tarea
+````
+PUT /tasks/{id}
+````
+Código esperado: 200
+
+### ✔️ Borrar tarea
+````
+DELETE /tasks/{id}
+````
+Código esperado: 204
+
+### ✔️ Intento de acceso no autorizado
+````
+GET /tasks/{id} con usuario incorrecto
+````
+Código esperado: 403 Forbidden
+
+## 🗄️ Tabla TASKS (SQL)
+```
+sql
+CREATE TABLE TASKS (
+    id BIGINT IDENTITY PRIMARY KEY,
+    owner_user_id BIGINT NOT NULL,
+    title VARCHAR(120) NOT NULL,
+    description VARCHAR(1000),
+    due_date DATETIME,
+    status VARCHAR(10),
+    priority VARCHAR(6),
+    created_at DATETIME DEFAULT GETDATE()
+);
+```
+## 🧩 Notas técnicas
+- Validaciones estrictas en el dominio (Task.java).
+
+- DAO protegido contra inyección SQL mediante PreparedStatement.
+
+- Repositorio implementado con JdbcTaskRepository.
+
+- Filtros aplicados en SQL de forma segura.
+
+- Control de permisos en el controlador antes de acceder al repositorio.
+
 
 ---
 
@@ -212,7 +371,6 @@ GET http://localhost:8080/example/intro
   }
 }
 ```
-
 ---
 
 ## 🛠 Endpoints en desarrollo
