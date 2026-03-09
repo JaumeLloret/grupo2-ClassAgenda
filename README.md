@@ -181,171 +181,124 @@ Relaciones principales:
 - Un usuario puede recibir múltiples recursos compartidos(1:N).
 
 ---
-## 🌐 API REST
 
-## 📝 API de Tareas
+## 🟦 API REST — CRUD de Usuarios (Sprint 4)
+Este sprint implementa la primera entidad completa del proyecto: User, siguiendo Clean Architecture, SOLID y acceso a datos mediante JDBC.
+La API expone un CRUD funcional para gestionar usuarios en la base de datos SQL Server.
 
-La API de tareas implementa un CRUD completo siguiendo Arquitectura Limpia, JDBC y control de permisos por usuario mediante la cabecera `X-User-Id`.
+### 🧱 Arquitectura aplicada en este sprint
+El módulo de usuarios se ha construido siguiendo las capas de Clean Architecture:
+- Dominio
+- User (modelo inmutable con validaciones estrictas)
+- UserRepository (contrato de acceso a datos)
+- Data
+- UserEntity (reflejo exacto de la tabla USERS)
+- UserDao (sentencias SQL con PreparedStatement)
+- UserMapper (traducción Entity ↔ Dominio)
+- JdbcUserRepository (implementación del contrato del Dominio)
+- Presentación
 
----
+### 🧩 Modelo de Dominio: User
+El objeto User representa un usuario válido según las reglas de negocio:
+- Atributos inmutables (final)
 
-## 📌 Endpoints principales
+Validaciones estrictas:
+- Nombre no vacío y ≤ 80 caracteres
+- Email no vacío, ≤ 255 caracteres y con '@'
+- Fecha de creación no nula
 
-### ➕ Crear tarea
-````
-POST /tasks
-Headers:
-X-User-Id: <id_usuario>
-Body:
-{
-"title": "Hacer ejercicio",
-"description": "30 minutos de cardio",
-"priority": "high",
-"scope": "personal"
-}
-````
+Dos constructores:
+- Con ID (para datos que vienen de la BD)
+- Sin ID (para nuevos usuarios)
 
-### 📄 Obtener todas las tareas
-````
-GET /tasks
-Headers:
-X-User-Id: <id_usuario>
-````
+### 🗄️ Acceso a Datos (DAO + Repository)
+UserEntity
+Refleja la tabla SQL USERS y permite ser rellenada por JDBC.
 
-### 🔍 Obtener una tarea por ID
-````
-GET /tasks/{id}
-Headers:
-X-User-Id: <id_usuario>
-````
-### ✏️ Actualizar tarea
-````
-PUT /tasks/{id}
-Headers:
-X-User-Id: <id_usuario>
-````
+UserDao
+Responsable de todas las operaciones SQL:
+- insert
+- findById
+- findByEmail
+- findAll
+- update
+- deleteById
 
-### 🗑️ Borrar tarea
-````
-DELETE /tasks/{id}
-Headers:
-X-User-Id: <id_usuario>
-````
----
+Todas las consultas usan PreparedStatement para evitar inyección SQL.
 
-## 🔎 Filtros disponibles
+UserMapper
+Traduce entre:
+- Dominio → Entity
+- Entity → Dominio
 
-Los filtros se aplican sobre `/tasks`:
-````
-GET /tasks?status=done
-GET /tasks?priority=high
-GET /tasks?scope=school
-````
-Pueden combinarse:
-````
-GET /tasks?status=pending&priority=low
-````
+Garantizando que los datos siempre pasan por las validaciones del Dominio.
 
----
+JdbcUserRepository
+Implementa el contrato UserRepository:
+- Decide si guardar implica insert o update
+- Usa Optional en las búsquedas
+- Usa Streams para transformar listas
 
-## 🔐 Control de permisos OWNER
+## 🟦 Endpoints disponibles en este sprint
+### ⚠️ Importante:
+En este sprint solo se ha implementado el CRUD interno de usuarios.
 
-Cada petición debe incluir:
-````
-X-User-Id: <id_usuario>
-````
+## 🧪 Pruebas manuales realizadas (CRUD de Usuarios)
+Las pruebas verifican que el CRUD funciona correctamente contra SQL Server.
 
-La API garantiza:
+### ✔️ Crear usuario
+Acción: Guardar un nuevo User("Nombre", "email@ejemplo.com")
 
-- Un usuario **solo puede ver, editar o borrar sus propias tareas**.
-- Si intenta acceder a una tarea ajena → **403 Forbidden**.
+Resultado esperado:
+- ID autogenerado
+- Fecha creada correctamente
+- Datos válidos tras pasar las validaciones del Dominio
 
-Ejemplo:
-````
-GET /tasks/12
-X-User-Id: 3
-````
+### ✔️ Buscar por email
+Acción: findByEmail("email@ejemplo.com")
 
-Si la tarea pertenece al usuario 5:
+Resultado esperado:
+- Optional con usuario presente
+- Datos coinciden con lo guardado
 
-```json
-{ "error": "Forbidden" }
-```
----
-## 🧪 Pruebas manuales documentadas
+### ✔️ Buscar por ID
+Acción: findById(id)
 
-### ✔️ Crear tarea
-````
-POST /tasks
-````
-Código esperado: 201
+Resultado esperado:
+- Optional presente si existe
+- Optional vacío si no existe
 
-Devuelve la tarea con ID generado.
+### ✔️ Listar todos
+Acción: findAll()
+Resultado esperado:
+- Lista de usuarios
+- Mapeo correcto Entity → Dominio
 
-### ✔️ Listar tareas
-````
-GET /tasks
-````
-Devuelve solo las tareas del usuario del header.
+### ✔️ Actualizar usuario
+Acción: modificar nombre/email y llamar a save()
 
-### ✔️ Filtrar tareas
-````
-GET /tasks?priority=high
-````
-Devuelve solo tareas del usuario con prioridad alta.
+Resultado esperado:
+- UPDATE ejecutado correctamente
+- Datos actualizados en BD
 
-### ✔️ Obtener tarea por ID
-````
-GET /tasks/{id}
-````
-Si pertenece al usuario → 200
+### ✔️ Borrar usuario
+Acción: deleteById(id)
+- Resultado esperado:
+- Fila eliminada sin errores
 
-Si NO pertenece → 403 Forbidden
+## 🧪 Test de Integración (IT)
+Se ha creado un test de integración real:
 
-### ✔️ Actualizar tarea
-````
-PUT /tasks/{id}
-````
-Código esperado: 200
+JdbcUserRepositoryIT.java
 
-### ✔️ Borrar tarea
-````
-DELETE /tasks/{id}
-````
-Código esperado: 204
+Incluye:
+- Lectura protegida del .env mediante Assumptions
+- Inserción real en SQL Server
+- Búsqueda por email
+- Comparación de fechas truncadas a segundos
+- Verificación de ID autogenerado
 
-### ✔️ Intento de acceso no autorizado
-````
-GET /tasks/{id} con usuario incorrecto
-````
-Código esperado: 403 Forbidden
-
-## 🗄️ Tabla TASKS (SQL)
-```
-sql
-CREATE TABLE TASKS (
-    id BIGINT IDENTITY PRIMARY KEY,
-    owner_user_id BIGINT NOT NULL,
-    title VARCHAR(120) NOT NULL,
-    description VARCHAR(1000),
-    due_date DATETIME,
-    status VARCHAR(10),
-    priority VARCHAR(6),
-    created_at DATETIME DEFAULT GETDATE()
-);
-```
-## 🧩 Notas técnicas
-- Validaciones estrictas en el dominio (Task.java).
-
-- DAO protegido contra inyección SQL mediante PreparedStatement.
-
-- Repositorio implementado con JdbcTaskRepository.
-
-- Filtros aplicados en SQL de forma segura.
-
-- Control de permisos en el controlador antes de acceder al repositorio.
-
-
+**Si la BD no está disponible (como en GitHub Actions), el test se aborta sin fallar.**
 ---
 
 ## 🟦 GET `/example/intro`
