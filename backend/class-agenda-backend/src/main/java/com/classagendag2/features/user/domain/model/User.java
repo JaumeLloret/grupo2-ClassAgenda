@@ -34,17 +34,17 @@ public final class User {
         }
     }
 
-        private void validateEmail(String emailToValidate) {
-            if (emailToValidate == null || emailToValidate.isBlank()) {
-                throw new IllegalArgumentException("El email no puede estar vacio");
-            }
-            if (emailToValidate.length() > 255) {
-                throw new IllegalArgumentException("El nombre no puede superar los 255 caracteres");
-            }
-            if (!emailToValidate.contains("@")) {
-                throw new IllegalArgumentException("El correo debe tener formato válido (contener '@)");
-            }
+    private void validateEmail(String emailToValidate) {
+        if (emailToValidate == null || emailToValidate.isBlank()) {
+            throw new IllegalArgumentException("El email no puede estar vacio");
         }
+        if (emailToValidate.length() > 255) {
+            throw new IllegalArgumentException("El nombre no puede superar los 255 caracteres");
+        }
+        if (!emailToValidate.contains("@")) {
+            throw new IllegalArgumentException("El correo debe tener formato válido (contener '@)");
+        }
+    }
 
 
     private void validateCreateAt(LocalDateTime dateToValidate) {
