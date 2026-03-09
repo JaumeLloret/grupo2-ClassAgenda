@@ -17,16 +17,18 @@ CREATE TABLE USERS (
 -- ======================================
 -- TABLE: EVENTS
 -- ======================================
-CREATE TABLE EVENTS (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    title VARCHAR(100) NOT NULL,
-    description TEXT,
-    status VARCHAR(20) NOT NULL,
-    priority VARCHAR(20) NOT NULL,
-    owner_id INT NOT NULL,
-    created_at DATETIME NOT NULL,
-    
-    CONSTRAINT FK_Task_User FOREIGN KEY (owner_id) REFERENCES USERS(id)
+CREATE TABLE [EVENTS] (
+	id INT IDENTITY(1,1) PRIMARY KEY,
+	owner_user_id INT NOT NULL,
+	title VARCHAR(120) NOT NULL,
+	[description] VARCHAR(1000),
+	start_at DATETIME,
+	end_at DATETIME,
+	event_type VARCHAR(12) NOT NULL,
+	created_at DATETIME NOT NULL DEFAULT GETDATE(),
+
+	CONSTRAINT fk_events_user
+		FOREIGN KEY (owner_user_id) REFERENCES USERS(id)
 );
 
 -- ========================================
