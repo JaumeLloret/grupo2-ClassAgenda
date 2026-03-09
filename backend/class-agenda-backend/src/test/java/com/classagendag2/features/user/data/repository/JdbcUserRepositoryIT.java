@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.sql.Connection;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
@@ -30,7 +29,7 @@ class JdbcUserRepositoryIT {
 
         // si el codigo sobrevive y llega hasta aquí, significa que SI hay un .env local valido
         // inicializamos la fabrica, el DAO y finalmente el repositorio
-        userRepository = new JdbcUserRepository(new UserDao((Connection) new DbConnectionFactory()));
+        userRepository = new JdbcUserRepository(new UserDao(new DbConnectionFactory()));
     }
 
     @Test
