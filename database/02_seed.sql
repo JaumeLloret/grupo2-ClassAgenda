@@ -3,48 +3,55 @@ GO
 
 SET LANGUAGE English;
 
--- ============================
--- INSERT: USERS
--- ============================
-INSERT INTO USERS ([name], email) VALUES
-('Beatriz López', 'beatriz@loquesea.com'),
-('Carlos Martínez', 'carlos@loquesea.com'),
-('Ana Torres', 'ana@loquesea.com'),
-('Javier Ruiz', 'javier@loquesea.com');
-GO
+-- ======================================
+-- USERS (5 registros)
+-- ======================================
+INSERT INTO USERS (name, email) VALUES
+('Ana López', 'ana.lopez@email.com'),
+('Carlos Pérez', 'carlos.perez@email.com'),
+('María García', 'maria.garcia@email.com'),
+('Juan Torres', 'juan.torres@email.com'),
+('Lucía Fernández', 'lucia.fernandez@email.com');
 
--- =============================
--- INSERT: EVENTS
--- =============================
-INSERT INTO [EVENTS] (owner_user_id, title, [description], start_at, end_at, event_type) VALUES
-(1, 'Reunión de proyecto', 'Revició del avance del proyecto', '2025-02-20 10:00', '2025-02-20 11:00', 'meeting'),
-(2, 'Clase de SQL', 'Sesión práctica de SQL Server', '2025-02-21 9:00', '2025-02-21 10:30', 'class'),
-(1, 'Turoría', 'Tutoria con el profesor', '2025-02-22 12:00', '2025-02-22 12:30', 'reunión'),
-(3, 'Examen de recuperación', 'Examen de recuperación de programación', '2025-03-01 18:00', '2025-03-01 19:30', 'examen');
+-- ======================================
+-- EVENTS (6 registros)
+-- ======================================
+INSERT INTO EVENTS (title, description, status, priority, owner_id, created_at) VALUES
+('Reunión de proyecto', 'Revisión semanal del proyecto', 'OPEN', 'HIGH', 1, GETDATE()),
+('Clase de bases de datos', 'Clase sobre SQL Server', 'OPEN', 'MEDIUM', 2, GETDATE()),
+('Entrega de informe', 'Entrega final del informe del proyecto', 'OPEN', 'HIGH', 3, GETDATE()),
+('Reunión con cliente', 'Presentación de avances', 'DONE', 'HIGH', 1, GETDATE()),
+('Planificación semanal', 'Organizar tareas de la semana', 'OPEN', 'LOW', 4, GETDATE()),
+('Taller de programación', 'Taller práctico de backend', 'OPEN', 'MEDIUM', 5, GETDATE());
 
--- ==============================
--- INSERT: TASKS
--- ==============================
-INSERT INTO TASKS (owner_user_id, title, [description], due_date, [status], [priority]) VALUES
-(1, 'Terminar Hito 2', 'Implementar base de datos en SQL Server', '2025-02-25', 'pending', 'high'),
-(2, 'Preparar presentación', 'Diapositivas para el examen oral de inglés', '2026-02-25', 'in_prog', 'medium'),
-(3, 'Estudiar SQL', 'Repasar claves primarias y foráneas', '2026-03-01', 'pending', 'high'),
-(4, 'Subir práctica', 'Entrega de la práctica de programación', '2026-03-02', 'completed', 'low');
+-- ======================================
+-- TASKS (7 registros)
+-- ======================================
+INSERT INTO TASKS (owner_user_id, title, description, due_date, status, priority) VALUES
+(1, 'Preparar presentación', 'Preparar diapositivas del proyecto', '2026-03-15', 'OPEN', 'HIGH'),
+(2, 'Estudiar SQL', 'Repasar joins y subqueries', '2026-03-12', 'OPEN', 'MED'),
+(3, 'Corregir informe', 'Revisar errores de formato', '2026-03-14', 'OPEN', 'HIGH'),
+(4, 'Enviar correos', 'Contactar con el equipo', '2026-03-10', 'DONE', 'LOW'),
+(5, 'Actualizar repositorio', 'Subir últimos cambios', '2026-03-11', 'OPEN', 'MED'),
+(1, 'Revisar tareas', 'Revisar progreso del equipo', '2026-03-13', 'OPEN', 'MED'),
+(2, 'Preparar ejercicios', 'Ejercicios para la clase', '2026-03-16', 'OPEN', 'HIGH');
 
--- ===============================
---  INSERT: EVENT_SHARES
--- ===============================
+-- ======================================
+-- EVENT_SHARES (5 registros)
+-- ======================================
 INSERT INTO EVENT_SHARES (event_id, shared_with_user_id, permission) VALUES
-(1, 2, 'read'),
-(2, 3, 'edit'),
-(3, 1, 'read'),
-(4, 4, 'read');
+(1, 2, 'EDIT'),
+(1, 3, 'VIEW'),
+(2, 4, 'VIEW'),
+(3, 1, 'EDIT'),
+(5, 2, 'VIEW');
 
--- ================================
--- INSERT:TASK_SHARES
--- ================================
+-- ======================================
+-- TASK_SHARES (5 registros)
+-- ======================================
 INSERT INTO TASK_SHARES (task_id, shared_with_user_id, permission) VALUES
-(1, 2, 'edit'),
-(2, 3, 'read'),
-(3, 1, 'read'),
-(4, 4, 'edit');
+(1, 2, 'EDIT'),
+(2, 3, 'VIEW'),
+(3, 4, 'VIEW'),
+(4, 1, 'EDIT'),
+(5, 3, 'VIEW');
