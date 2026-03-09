@@ -10,6 +10,7 @@ public final class User {
     private final String email;
     private final LocalDateTime createdAt;
 
+    // 1. Constructor COMPLETO: Se usa cuando sacamos datos que ya existen en la base de datos
     public User(Long id, String name, String email, LocalDateTime createdAt) {
         validateName(name);
         validateEmail(email);
@@ -21,6 +22,7 @@ public final class User {
         this.createdAt = createdAt;
     }
 
+    //2. Constructor PARA NUEVOS USUARIOS: Se usa cuando alguien se registra de cero
     public User (String name, String email) {
         this(null, name, email, LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
     }

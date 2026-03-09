@@ -1,5 +1,7 @@
 package com.classagendag2.features.user.presentation.handlers;
 
+import com.classagendag2.features.user.domain.model.User;
+import com.classagendag2.features.user.domain.repository.UserRepository;
 import com.classagendag2.shared.http.JsonResponses;
 import com.classagendag2.shared.http.ResponseContract;
 import com.classagendag2.shared.http.helpers.JsonEscaper;
@@ -11,13 +13,18 @@ import java.nio.charset.StandardCharsets;
 
 public final class UserHandler implements HttpHandler{
 
+    private final UserRepository userRepository;
+
+    public  UserHandler(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         try {
             String httpMethod = httpExchange.getRequestMethod();
             switch (httpMethod) {
                 case "GET" -> sendOk(httpExchange, "GET user");
-                case "POST" -> sendOk(httpExchange, "POST user");
+                case "POST" -> handleCreateUser(httpExchange);
                 case "PUT" -> sendOk(httpExchange, "PUT user");
                 case "PATCH" -> sendOk(httpExchange, "PATCH user");
                 case "DELETE" -> sendOk(httpExchange, "DELETE user");
@@ -28,6 +35,56 @@ public final class UserHandler implements HttpHandler{
         }
     }
 
+    // _______________________________
+    // POST / user --> Crear usuario
+    // _______________________________
+    private  void handleCreateUser(HttpExchange exchange) throws IOException {
+        String body =readRequestBody(exchange);
+        CreateUserDto dto = parseCreateUserDto(body);
+        User user = new User(dto.name(), dto.email());
+        User saved = userRepository.save(user);
+        String json =
+                "{"
+                + "\"id\":" + saved.getId() + ","
+                + "\"name\":\"" + JsonEscaper.escape(saved.getName()) + "\","
+                + "\"email\":\"" + JsonEscaper.escape(saved.getEmail()) + "\","
+                + "\"createdAt\":\"" + saved.getCreatedAt() + "\""
+                + "}";
+        JsonResponses.sendJson(exchange, 201, json);
+    }
+
+    // ______________________________
+    // Parseo manual de JSON
+    // ______________________________
+    private CreateUserDto parseCreateUserDto(String json) {
+        json = json.trim();
+
+        if (json.startsWith("{")) json = json.substring(1);
+        if (json.endsWith("}")) json = json.substring(0, json.length() - 1);
+
+        String[] parts = json.split(",");
+
+        String name = null;
+        String email = null;
+
+        for (String part : parts) {
+            String[] keyValue = part.split(":");
+
+            String key = keyValue[0].trim().replace("\"", "");
+            String value = keyValue[1].trim().replace("\"", "");
+
+            if (key.equals("name")) name = value;
+            if (key.equals("email")) email = value;
+        }
+
+        return new CreateUserDto(name, email);
+    }
+
+    private record CreateUserDto(String name, String email) {}
+
+    // __________________________
+    // Metodos auxiliares (Aules)
+    // __________________________
     private void sendOk(HttpExchange httpExchange, String message) throws IOException {
         String receivedBody = readRequestBody(httpExchange);
         String dataJson = "{"
