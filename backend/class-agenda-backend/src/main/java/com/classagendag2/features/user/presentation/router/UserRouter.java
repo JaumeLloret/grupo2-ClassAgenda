@@ -8,6 +8,7 @@ import com.classagendag2.features.user.domain.repository.UserRepository;
 import com.classagendag2.features.user.presentation.handlers.UserHandler;
 import com.sun.net.httpserver.HttpServer;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,7 +21,12 @@ public final class UserRouter {
         DbConnectionFactory connectionFactory = new DbConnectionFactory();
 
         // 2.  Crear el Dao con la fábrica
-        UserDao userDao = new UserDao(connectionFactory);
+        UserDao userDao = null;
+        try {
+            userDao = new UserDao(connectionFactory.open());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
         // 3. Crear el repositorio con el DAO
         UserRepository userRepository = new JdbcUserRepository(userDao);
