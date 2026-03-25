@@ -59,20 +59,23 @@ public final class UserHandler implements HttpHandler{
     // GET / user --> Mostrar Usuarios PROBANDO
     // _______________________________
     private  void handleListsUsers(HttpExchange exchange) throws IOException {
-        String body = readRequestBody(exchange);
-        CreateUserDto dto = parseCreateUserDto(body);
-        List<User> all = userRepository.findAll();
-        //User user = new User(dto.name(), dto.email());
-        //List<User> saved = userRepository.findAll();
-        String json2 = "{ consulta: Esto es una prueba.}";
+        List<User> users = userRepository.findAll();
+
+        //String json2 = "{ consulta: Esto es una prueba.}";
         String json =
                 "{"
-                        + "\"id\":" + all.get(0).getId() + ","
-                        + "\"name\":\"" + JsonEscaper.escape(all.get(0).getName()) + "\","
-                        + "\"email\":\"" + JsonEscaper.escape(all.get(0).getEmail()) + "\","
-                        + "\"createdAt\":\"" + all.get(0).getCreatedAt() + "\""
-                        + "}";
-        JsonResponses.sendJson(exchange, 201, json2);
+                        + "\"items\": ";
+
+        for(int i = 0; i< users.size();i++){
+            json += "["
+                    + "\"id\":" + users.get(i).getId() + ","
+                    + "\"name\":\"" + JsonEscaper.escape(users.get(i).getName()) + "\","
+                    + "\"email\":\"" + JsonEscaper.escape(users.get(i).getEmail()) + "\","
+                    + "\"createdAt\":\"" + users.get(i).getCreatedAt() + "\""
+                    + "]";
+        }
+        json += "}";
+        JsonResponses.sendJson(exchange, 201, json);
     }
 
     // ______________________________
