@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 
 public final class UserHandler implements HttpHandler{
 
@@ -25,7 +26,7 @@ public final class UserHandler implements HttpHandler{
             String httpMethod = httpExchange.getRequestMethod();
             switch (httpMethod) {
                 //case "GET" -> sendOk(httpExchange, "GET okk");
-                case "GET" -> handleListsUsers(httpExchange); //Usamos el verbo GET (Dame información, solo quiero consultar).
+                case "GET" -> handleUserInfo(httpExchange);//Usamos el verbo GET (Dame información, solo quiero consultar).
                 case "POST" -> handleCreateUser(httpExchange); //Usamos el verbo POST (Te envío datos nuevos para que los guardes)
                 case "PUT" -> sendOk(httpExchange, "PUT user"); // Usamos PUT (Reemplaza este dato por completo)
                 case "PATCH" -> sendOk(httpExchange, "PATCH user"); //PATCH (Modifica solo una pequeña parte del dato).
@@ -56,28 +57,80 @@ public final class UserHandler implements HttpHandler{
     }
 
     // _______________________________
-    // GET / user --> Mostrar Usuarios PROBANDO
+    // GET / user --> Mostrar Usuarios
     // _______________________________
+    private void handleUserInfo(HttpExchange exchange) throws IOException {
+        String path = exchange.getRequestURI().getPath();
+
+        //Muestro todos los usuarios
+        if(path.equals("/user/")){
+            handleListsUsers(exchange);
+        } //Busqueda por ID
+        else if (path.matches("/user/\\d+")) {
+            handleUserById(exchange);
+        }  //Busqueda por email
+        else if (path.startsWith("/user/email/")){
+            handleUserByEmail(exchange);
+        }
+
+    }
     private  void handleListsUsers(HttpExchange exchange) throws IOException {
+
+        String path = exchange.getRequestURI().getPath();
         List<User> users = userRepository.findAll();
 
-        //String json2 = "{ consulta: Esto es una prueba.}";
         String json =
-                "{"
-                        + "\"items\": ";
+                    "{"
+                            + "\"items\": ";
 
-        for(int i = 0; i< users.size();i++){
-            json += "["
-                    + "\"id\":" + users.get(i).getId() + ","
-                    + "\"name\":\"" + JsonEscaper.escape(users.get(i).getName()) + "\","
-                    + "\"email\":\"" + JsonEscaper.escape(users.get(i).getEmail()) + "\","
-                    + "\"createdAt\":\"" + users.get(i).getCreatedAt() + "\""
-                    + "]";
-        }
-        json += "}";
+            for(int i = 0; i< users.size();i++){
+                json += "["
+                        + "\"id\":" + users.get(i).getId() + ","
+                        + "\"name\":\"" + JsonEscaper.escape(users.get(i).getName()) + "\","
+                        + "\"email\":\"" + JsonEscaper.escape(users.get(i).getEmail()) + "\","
+                        + "\"createdAt\":\"" + users.get(i).getCreatedAt() + "\""
+                        + "]";
+            }
+            json += "}";
+
         JsonResponses.sendJson(exchange, 201, json);
     }
 
+    private  void handleUserById(HttpExchange exchange) throws IOException {
+        //sendOk(exchange, "GET ok ID");
+        String path = exchange.getRequestURI().getPath();
+        String userId = path.substring("/user/".length());
+        Long id = Long.parseLong(userId);
+
+        Optional<User> user = userRepository.findById(id);
+
+        String json =
+                "{"
+                        + "\"id\":" + user.get().getId() + ","
+                        + "\"name\":\"" + JsonEscaper.escape(user.get().getName()) + "\","
+                        + "\"email\":\"" + JsonEscaper.escape(user.get().getEmail()) + "\","
+                        + "\"createdAt\":\"" + user.get().getCreatedAt() + "\""
+                        + "}";
+
+        JsonResponses.sendJson(exchange, 201, json);
+
+    }
+
+    private  void handleUserByEmail(HttpExchange exchange) throws IOException {
+        String path = exchange.getRequestURI().getPath();
+        String email = path.substring("/user/email/".length());
+        Optional<User> user = userRepository.findByEmail(email);
+
+        String json =
+                "{"
+                        + "\"id\":" + user.get().getId() + ","
+                        + "\"name\":\"" + JsonEscaper.escape(user.get().getName()) + "\","
+                        + "\"email\":\"" + JsonEscaper.escape(user.get().getEmail()) + "\","
+                        + "\"createdAt\":\"" + user.get().getCreatedAt() + "\""
+                        + "}";
+
+        JsonResponses.sendJson(exchange, 201, json);
+    }
     // ______________________________
     // Parseo manual de JSON
     // ______________________________
