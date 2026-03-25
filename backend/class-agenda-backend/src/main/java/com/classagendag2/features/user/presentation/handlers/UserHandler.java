@@ -10,6 +10,7 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public final class UserHandler implements HttpHandler{
 
@@ -23,11 +24,12 @@ public final class UserHandler implements HttpHandler{
         try {
             String httpMethod = httpExchange.getRequestMethod();
             switch (httpMethod) {
-                case "GET" -> sendOk(httpExchange, "GET user");
-                case "POST" -> handleCreateUser(httpExchange);
-                case "PUT" -> sendOk(httpExchange, "PUT user");
-                case "PATCH" -> sendOk(httpExchange, "PATCH user");
-                case "DELETE" -> sendOk(httpExchange, "DELETE user");
+                //case "GET" -> sendOk(httpExchange, "GET okk");
+                case "GET" -> handleListsUsers(httpExchange); //Usamos el verbo GET (Dame información, solo quiero consultar).
+                case "POST" -> handleCreateUser(httpExchange); //Usamos el verbo POST (Te envío datos nuevos para que los guardes)
+                case "PUT" -> sendOk(httpExchange, "PUT user"); // Usamos PUT (Reemplaza este dato por completo)
+                case "PATCH" -> sendOk(httpExchange, "PATCH user"); //PATCH (Modifica solo una pequeña parte del dato).
+                case "DELETE" -> sendOk(httpExchange, "DELETE user"); //Usamos el verbo DELETE (Elimina este dato de la base de datos).
                 default -> sendMethodNotAllowed(httpExchange);
             }
         } catch (Exception exception) {
@@ -51,6 +53,26 @@ public final class UserHandler implements HttpHandler{
                 + "\"createdAt\":\"" + saved.getCreatedAt() + "\""
                 + "}";
         JsonResponses.sendJson(exchange, 201, json);
+    }
+
+    // _______________________________
+    // GET / user --> Mostrar Usuarios PROBANDO
+    // _______________________________
+    private  void handleListsUsers(HttpExchange exchange) throws IOException {
+        String body = readRequestBody(exchange);
+        CreateUserDto dto = parseCreateUserDto(body);
+        List<User> all = userRepository.findAll();
+        //User user = new User(dto.name(), dto.email());
+        //List<User> saved = userRepository.findAll();
+        String json2 = "{ consulta: Esto es una prueba.}";
+        String json =
+                "{"
+                        + "\"id\":" + all.get(0).getId() + ","
+                        + "\"name\":\"" + JsonEscaper.escape(all.get(0).getName()) + "\","
+                        + "\"email\":\"" + JsonEscaper.escape(all.get(0).getEmail()) + "\","
+                        + "\"createdAt\":\"" + all.get(0).getCreatedAt() + "\""
+                        + "}";
+        JsonResponses.sendJson(exchange, 201, json2);
     }
 
     // ______________________________

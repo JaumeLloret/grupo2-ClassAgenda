@@ -9,8 +9,10 @@ public final class UserEntity {
     private String email;
     private LocalDateTime createdAt;
 
+    // Constructor vacío: Absolutamente necesario para que frameworks de BD puedan instanciarlo
     public UserEntity() {}
 
+    // Constructor completo para cuando queremos rellenarlo de golpe
     public UserEntity(Long id, String name, String email, LocalDateTime createdAt) {
         this.id = id;
         this.name = name;

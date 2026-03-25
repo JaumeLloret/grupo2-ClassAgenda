@@ -32,6 +32,6 @@ public final class UserRouter {
         UserRepository userRepository = new JdbcUserRepository(userDao);
 
         // 4.  Registar la ruta en el DAO
-        httpServer.createContext("/user",new UserHandler(userRepository));
+        httpServer.createContext("/user/",new UserHandler(userRepository));
     }
 }
