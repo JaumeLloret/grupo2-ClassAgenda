@@ -30,7 +30,7 @@ public final class UserHandler implements HttpHandler{
                 case "POST" -> handleCreateUser(httpExchange); //Usamos el verbo POST (Te envío datos nuevos para que los guardes)
                 case "PUT" -> sendOk(httpExchange, "PUT user"); // Usamos PUT (Reemplaza este dato por completo)
                 case "PATCH" -> sendOk(httpExchange, "PATCH user"); //PATCH (Modifica solo una pequeña parte del dato).
-                case "DELETE" -> sendOk(httpExchange, "DELETE user"); //Usamos el verbo DELETE (Elimina este dato de la base de datos).
+                case "DELETE" -> handleDeleteUser(httpExchange); //Usamos el verbo DELETE (Elimina este dato de la base de datos).
                 default -> sendMethodNotAllowed(httpExchange);
             }
         } catch (Exception exception) {
@@ -74,6 +74,27 @@ public final class UserHandler implements HttpHandler{
         }
 
     }
+
+    // _______________________________
+    // DELETE / user --> Eliminar usuario
+    // _______________________________
+    private  void handleDeleteUser(HttpExchange exchange) throws IOException {
+        String path = exchange.getRequestURI().getPath();
+        String userId = path.substring("/user/".length());
+        Long id = Long.parseLong(userId);
+
+        userRepository.deleteById(id);
+
+
+        //sendOk(exchange, "DELETE user: " + id);
+        String json =
+                "{"
+                        + "\"id\":" + id + ","
+                        + "\"Method\": DELETE user,"
+                        + "}";
+        JsonResponses.sendJson(exchange, 200, json);
+    }
+
     private  void handleListsUsers(HttpExchange exchange) throws IOException {
 
         String path = exchange.getRequestURI().getPath();
