@@ -15,7 +15,7 @@ public final class TaskDao {
     }
 
     public TaskEntity insert(TaskEntity entity) {
-        String query = "INSERT INTO TASKS (title, description, status, priority, owner_id, created_at) VALUES (?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO TASKS (title, description, status, priority, owner_user_id, created_at) VALUES (?, ?, ?, ?, ?, ?)";
         // Para protegernos absolutamente de la Inyección SQL, usamos siempre PreparedStatement con interrogaciones (?)
         try (PreparedStatement pstmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, entity.getTitle());
@@ -55,7 +55,7 @@ public final class TaskDao {
     }
 
     public Optional<TaskEntity> findById(Long id) {
-        String query = "SELECT id, title, description, status, priority, owner_id, created_at FROM TASKS WHERE id = ?";
+        String query = "SELECT id, title, description, status, priority, owner_user_id, created_at FROM TASKS WHERE id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setLong(1, id);
             try (ResultSet resultSet = pstmt.executeQuery()) {
@@ -78,7 +78,7 @@ public final class TaskDao {
     }
 
     public List<TaskEntity> findByOwnerId(Long ownerId) {
-        String query = "SELECT id, title, description, status, priority, owner_id, created_at FROM TASKS WHERE owner_id = ?";
+        String query = "SELECT id, title, description, status, priority, owner_user_id, created_at FROM TASKS WHERE owner_user_id = ?";
         List<TaskEntity> list = new ArrayList<>();
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setLong(1, ownerId);
@@ -93,8 +93,8 @@ public final class TaskDao {
 
     // FILTRO COMPUESTO MÚLTIPLE (Con la cláusula AND)
     public List<TaskEntity> findByOwnerIdAndStatus(Long ownerId, String status) {
-        String query = "SELECT id, title, description, status, priority, owner_id, created_at " +
-                "FROM TASKS WHERE owner_id = ? AND status = ?";
+        String query = "SELECT id, title, description, status, priority, owner_user_id, created_at " +
+                "FROM TASKS WHERE owner_user_id = ? AND status = ?";
         List<TaskEntity> list = new ArrayList<>();
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setLong(1, ownerId);
@@ -115,7 +115,7 @@ public final class TaskDao {
                 rs.getString("description"),
                 rs.getString("status"),
                 rs.getString("priority"),
-                rs.getLong("owner_id"),
+                rs.getLong("owner_user_id"),
                 rs.getObject("created_at", LocalDateTime.class)
         );
     }
