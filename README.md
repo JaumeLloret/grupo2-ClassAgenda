@@ -335,6 +335,153 @@ shared/http/handlers
 
 A medida que se implementen nuevos handlers y routers, se irán documentando en esta sección.
 
+## 🟦 CRUD de TAREAS (Sprint 5)
+### Arquitectura aplicada en este sprint
+
+**Dominio:**
+- Task (modelo inmutable con validaciones)
+- TaskStatus (enum)
+- TaskPriority (enum)
+
+**Data:**
+- TaskEntity (reflejo de la tabla TASKS)
+- TaskDao (operaciones SQL con JDBC)
+- TaskMapper (Entity ↔ Dominio)
+- JdbcTaskRepository (implementación del repositorio)
+
+**Presentacion:**
+- TaskHandler (endpoints REST)
+- TaskRouter (rutas HTTP)
+
+### Enumeraciones (Enums)
+
+Para garantizar consistencia y evitar errores de escritura, el estado y la prioridad se representan mediante enums:
+
+**TaskStatus.java**
+```java
+public enum TaskStatus {
+    PENDING,
+    IN_PROGRESS,
+    COMPLETED
+}
+```
+**TaskPriority.java**
+```java
+public enum TaskPriority {
+    LOW,
+    MEDIUM,
+    HIGH
+}
+```
+### Modelo de Dominio: Task
+La clase Task es inmutable y representa una tarea válida según las reglas de negocio.
+
+Incluye:
+- Validación de título
+- Validación de propietario
+- Validación de estado y prioridad
+- Fecha de creación truncada a segundos
+- Regla de negocio: solo el propietario puede acceder a la tarea
+
+### Regla OWNER
+```java
+public void validateIsOwnedBy(Long requestingUserId) {
+    if (!Objects.equals(this.ownerId, requestingUserId)) {
+        throw new SecurityException("No tienes acceso a esta tarea");
+    }
+}
+```
+
+### Acceso a Datos (DAO + Repository)
+**TaskEntity**
+
+Refleja la tabla SQL TASKS.
+
+**TaskDao**
+
+Incluye:
+- insert
+- findById
+- findAll (con filtros)
+- update
+- deleteById
+
+Todas las consultas usan PreparedStatement.
+
+**TaskMapper**
+
+Traduce:
+- Entity → Dominio
+- Dominio → Entity
+
+### Endpoints de la API de Tareas
+
+**Crear tarea**
+
+POST /tasks
+
+**Listar tareas (con filtros)**
+
+GET /tasks?scope=OWN&status=PENDING&priority=HIGH
+
+**Obtener tarea por ID**
+
+GET /tasks/{id}
+
+**Actualizar tarea**
+
+PUT /tasks/{id}
+
+**Eliminar tarea**
+
+DELETE /tasks/{id}
+
+### Control de Propietario (OWNER)
+Toda operación requiere el header:
+
+X-User-Id: <id>
+
+Si el usuario intenta acceder a una tarea que no es suya, la API devuelve:
+```json
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "No tienes acceso a esta tarea"
+  }
+}
+```
+### Filtros implementados
+Por SCOPE:
+
+GET /tasks?scope=OWN
+
+Por ESTADO:
+
+GET /tasks?status=PENDING
+
+Por PRIORIDAD:
+
+GET /tasks?priority=HIGH
+
+### Prueba de control OWNER (403/NOT_FOUND)
+
+Los parámetros usados para la prueba determinan el acceso a una tarea asignada a un ID desde otro ID diferente:
+
+Petición:
+
+GET /tasks/1
+
+X-User-Id: 2
+
+Respuesta:
+```json
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "No tienes acceso a esta tarea"
+  }
+}
+```
 
 ## 🖥️ Cliente web
 
