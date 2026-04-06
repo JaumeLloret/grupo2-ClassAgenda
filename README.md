@@ -335,7 +335,7 @@ shared/http/handlers
 
 A medida que se implementen nuevos handlers y routers, se irán documentando en esta sección.
 
-## 🟦 CRUD de TAREAS (Sprint 5)
+## 🟦 API - CRUD de TAREAS (Sprint 5)
 ### Arquitectura aplicada en este sprint
 
 **Dominio:**
