@@ -103,6 +103,7 @@ yarn-error.log*
 # ---------
 *.tmp
 *.swp
+*.lst
 /out
 /backend/class-agenda-backend/target/surefire-reports/2026-02-24T01-29-10_148.dumpstream
 /backend/class-agenda-backend/target/surefire-reports/com.classagendag2.shared.config.ServerConfigTest.txt

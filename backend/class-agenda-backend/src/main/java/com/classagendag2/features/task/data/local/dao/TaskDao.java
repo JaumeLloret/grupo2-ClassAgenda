@@ -116,12 +116,31 @@ public final class TaskDao {
                 rs.getLong("id"),
                 rs.getString("title"),
                 rs.getString("description"),
-                rs.getString("status"),
-                rs.getString("priority"),
+                rs.getString("status").toUpperCase(),
+                normalizePriority(rs.getString("priority")),
                 rs.getLong("owner_user_id"),
                 rs.getString("due_date"),
                 rs.getObject("created_at", LocalDateTime.class)
         );
     }
+    private String normalizePriority(String raw) {
+        if (raw == null) return null;
+
+        String upper = raw.toUpperCase();
+
+        switch (upper) {
+            case "LOW":
+                return "LOW";
+            case "HIGH":
+                return "HIGH";
+            case "MEDIUM":   // ← valor que viene de SQL Server
+                return "MED"; // ← valor que tu enum espera
+            case "MED":
+                return "MED";
+            default:
+                throw new IllegalArgumentException("Valor de prioridad inválido en BD: " + raw);
+        }
+    }
+
 }
 
