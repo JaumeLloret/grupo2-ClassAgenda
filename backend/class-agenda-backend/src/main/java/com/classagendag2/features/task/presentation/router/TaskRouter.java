@@ -32,7 +32,7 @@ public final class TaskRouter {
         TaskRepository taskRepository = new JdbcTaskRepository(taskDao);
 
         // 4.  Registar la ruta en el DAO
-        httpServer.createContext("/task/",new TaskHandler(taskRepository));
+        httpServer.createContext("/tasks",new TaskHandler(taskRepository));
     }
 
 }

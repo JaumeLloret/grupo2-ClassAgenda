@@ -18,6 +18,7 @@ public final class TaskMapper {
                 task.getStatus().name(), // .name() extrae la palabra exacta del Enum (ej. "PENDING")
                 task.getPriority().name(),
                 task.getOwnerId(),
+                task.getDueDate(),
                 task.getCreatedAt()
         );
     }
@@ -33,6 +34,7 @@ public final class TaskMapper {
                 TaskStatus.valueOf(entity.getStatus()), // .valueOf() convierte el texto de SQL en un Enum verificando que sea legal
                 TaskPriority.valueOf(entity.getPriority()),
                 entity.getOwnerId(),
+                entity.getDueDate(),
                 entity.getCreatedAt()
         );
     }

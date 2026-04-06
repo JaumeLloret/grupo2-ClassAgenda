@@ -11,9 +11,11 @@ public final class Task {
     private final TaskPriority priority;
     private final Long ownerId; // El identificador del creador (Nuestra relación)
     private final LocalDateTime createdAt;
+    private final String dueDate;
+
 
     // 1. Constructor Completo: Para reconstruir datos que vienen de SQL
-    public Task(Long id, String title, String description, TaskStatus status, TaskPriority priority, Long ownerId, LocalDateTime createdAt) {
+    public Task(Long id, String title, String description, TaskStatus status, TaskPriority priority, Long ownerId, String dueDate, LocalDateTime createdAt) {
         // Antes de aceptar los datos, los pasamos por nuestra "aduana" de validación
         validateTitle(title);
         validateOwner(ownerId);
@@ -25,17 +27,20 @@ public final class Task {
         this.status = status;
         this.priority = priority;
         this.ownerId = ownerId;
+        this.dueDate = dueDate;
         this.createdAt = createdAt;
+
+
     }
 
     // 2. Constructor para Nuevas Tareas: Usado desde la interfaz de usuario
-    public Task(String title, String description, TaskPriority priority, Long ownerId) {
+    public Task(String title, String description, TaskPriority priority, Long ownerId, String dueDate) {
         // La palabra 'this' invoca al constructor principal de arriba.
         // Toda tarea nueva nace sin ID (null) y con estado PENDING.
         // TRUCO PRO: Usamos .truncatedTo(ChronoUnit.SECONDS) para recortar los milisegundos de la fecha.
         // ¿Por qué? Porque Java guarda nanosegundos, pero el tipo DATETIME de SQL Server es menos preciso.
         // Si no los igualamos, las comparaciones de fechas en nuestros tests fallarán incomprensiblemente.
-        this(null, title, description, TaskStatus.PENDING, priority, ownerId, LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+        this(null, title, description, TaskStatus.PENDING, priority, ownerId, dueDate, LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
     }
 
     private void validateTitle(String titleToValidate) {
@@ -82,4 +87,6 @@ public final class Task {
     public TaskPriority getPriority() { return priority; }
     public Long getOwnerId() { return ownerId; }
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public String getDueDate() { return dueDate; }
+
 }

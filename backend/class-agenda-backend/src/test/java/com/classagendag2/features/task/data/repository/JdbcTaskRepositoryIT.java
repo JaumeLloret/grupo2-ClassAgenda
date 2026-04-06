@@ -55,7 +55,7 @@ class JdbcTaskRepositoryIT {
             Long currentOwnerId = savedOwner.getId();
 
             // === FASE 2: OPERACIÓN CREATE ===
-            Task newTask = new Task("Revisión de Arquitectura", "Analizar patrón DI", TaskPriority.HIGH, currentOwnerId);
+            Task newTask = new Task("Revisión de Arquitectura", "Analizar patrón DI", TaskPriority.HIGH, currentOwnerId, "2026-01-01");
             Task savedTask = taskRepository.save(newTask);
 
             assertNotNull(savedTask.getId(), "El motor SQL debe proveer un identificador primario numérico.");
@@ -77,6 +77,7 @@ class JdbcTaskRepositoryIT {
                     TaskStatus.COMPLETED, // Mutamos el estado de la tarea a completada
                     savedTask.getPriority(),
                     savedTask.getOwnerId(),
+                    savedTask.getDueDate(),
                     savedTask.getCreatedAt()
             );
             taskRepository.save(taskToUpdate);
