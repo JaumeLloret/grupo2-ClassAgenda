@@ -3,14 +3,11 @@ package com.classagendag2.features.user.presentation.router;
 import com.classagendag2.features.example.data.local.connection.DbConnectionFactory;
 import com.classagendag2.features.user.data.local.dao.UserDao;
 import com.classagendag2.features.user.data.repository.JdbcUserRepository;
-import com.classagendag2.features.user.domain.model.User;
 import com.classagendag2.features.user.domain.repository.UserRepository;
 import com.classagendag2.features.user.presentation.handlers.UserHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
 
 public final class UserRouter {
     private UserRouter() {}

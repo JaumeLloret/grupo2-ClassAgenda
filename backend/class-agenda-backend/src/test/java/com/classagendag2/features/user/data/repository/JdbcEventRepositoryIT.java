@@ -1,7 +1,7 @@
 package com.classagendag2.features.user.data.repository;
 
 import com.classagendag2.features.example.data.local.connection.DbConnectionFactory;
-import com.classagendag2.features.user.data.local.dao.UserDao;
+import com.classagendag2.features.user.data.local.dao.EventDao;
 import com.classagendag2.features.user.domain.model.User;
 import com.classagendag2.shared.config.DbConfig;
 import org.junit.jupiter.api.Assumptions;
@@ -32,7 +32,7 @@ class JdbcUserRepositoryIT {
         // inicializamos la fabrica, el DAO y finalmente el repositorio
         DbConnectionFactory connectionFactory = new DbConnectionFactory();
         try {
-            userRepository = new JdbcUserRepository(new UserDao(connectionFactory.open()));
+            userRepository = new JdbcUserRepository(new EventDao(connectionFactory.open()));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
