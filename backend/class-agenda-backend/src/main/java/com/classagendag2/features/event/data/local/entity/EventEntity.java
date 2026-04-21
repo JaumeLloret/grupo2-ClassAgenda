@@ -9,6 +9,9 @@ public final class EventEntity {
     private String description;
     private String status;
     private String priority;
+    private String location;
+    private LocalDateTime startAt;
+    private LocalDateTime endAt;
     private int owner_id;
     private LocalDateTime createdAt;
 
@@ -16,12 +19,15 @@ public final class EventEntity {
     public EventEntity() {}
 
     // Constructor completo para cuando queremos rellenarlo de golpe
-    public EventEntity(Long id, String title, String description, String status, String priority, int owner_id,  LocalDateTime createdAt) {
+    public EventEntity(Long id, String title, String description, String status, String priority, String location, LocalDateTime startAt, LocalDateTime endAt, int owner_id,  LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.status = status;
         this.priority = priority;
+        this.location = location;
+        this.startAt = startAt;
+        this.endAt = endAt;
         this.owner_id = owner_id;
         this.createdAt = createdAt;
     }
@@ -64,6 +70,30 @@ public final class EventEntity {
 
     public void setPriority(String priority) {
         this.priority = priority;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public LocalDateTime getStartAt() {
+        return startAt;
+    }
+
+    public void setStartAt(LocalDateTime startAt) {
+        this.startAt = startAt;
+    }
+
+    public LocalDateTime getEndAt() {
+        return endAt;
+    }
+
+    public void setEndAt(LocalDateTime endAt) {
+        this.endAt = endAt;
     }
 
     public int getOwner_id() {

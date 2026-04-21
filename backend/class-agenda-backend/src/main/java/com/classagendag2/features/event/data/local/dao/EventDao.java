@@ -113,6 +113,9 @@ public final class EventDao {
                 resultSet.getString("description"),
                 resultSet.getString("status"),
                 resultSet.getString("priority"),
+                resultSet.getString("location"),
+                (LocalDateTime) resultSet.getObject("start_at"),
+                (LocalDateTime) resultSet.getObject("end_at"),
                 resultSet.getInt("owner_id"),
                 resultSet.getObject("created_at", LocalDateTime.class)
         );

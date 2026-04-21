@@ -10,14 +10,20 @@ public final class Event {
     private final String description;
     private final String status;
     private final String priority;
+    private final String location;
+    private final LocalDateTime startAt;
+    private final LocalDateTime endAt;
     private final int owner_id;
     private final LocalDateTime createdAt;
 
-    public Event(Long id, String title, String description, String status, String priority, int owner_id, LocalDateTime createdAt) {
+    public Event(Long id, String title, String description, String status, String priority, String location, LocalDateTime startAt, LocalDateTime endAt, int owner_id, LocalDateTime createdAt) {
         validateTitle(title);
         validateDescription(description);
         validateStatus(status);
         validatePriority(priority);
+        ValidateLocation(location);
+        ValidateStartAt(startAt);
+        ValidateEndAt(endAt);
         validateOwner_id(owner_id);
         validateCreateAt(createdAt);
 
@@ -26,11 +32,23 @@ public final class Event {
         this.description = description;
         this.status = status;
         this.priority = priority;
+        this.location = location;
+        this.startAt = startAt;
+        this.endAt = endAt;
         this.owner_id = owner_id;
         this.createdAt = createdAt;
     }
 
     /* VER QUE NOS HACE FALTA VALIDAR */
+    private void ValidateEndAt(LocalDateTime endAt) {
+    }
+
+    private void ValidateStartAt(LocalDateTime startAt) {
+    }
+
+    private void ValidateLocation(String location) {
+    }
+
     private void validateOwner_id(int ownerId) {
     }
 
@@ -106,5 +124,14 @@ public final class Event {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public String getLocation() { return location;
+    }
+
+    public LocalDateTime getStartAt() { return startAt;
+    }
+
+    public LocalDateTime getEndAt() { return endAt;
     }
 }

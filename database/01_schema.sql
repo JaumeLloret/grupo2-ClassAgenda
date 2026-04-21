@@ -23,9 +23,12 @@ CREATE TABLE EVENTS (
     description TEXT,
     status VARCHAR(20) NOT NULL,
     priority VARCHAR(20) NOT NULL,
+    location VARCHAR(255),
+    end_at DATETIME NOT NULL,
+    end_at DATETIME NOT NULL,
     owner_id INT NOT NULL,
     created_at DATETIME NOT NULL,
-    
+
     CONSTRAINT FK_Task_User FOREIGN KEY (owner_id) REFERENCES USERS(id)
 );
 
