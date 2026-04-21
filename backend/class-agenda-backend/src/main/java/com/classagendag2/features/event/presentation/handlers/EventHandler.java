@@ -25,12 +25,11 @@ public final class EventHandler implements HttpHandler{
         try {
             String httpMethod = httpExchange.getRequestMethod();
             switch (httpMethod) {
-                //case "GET" -> sendOk(httpExchange, "GET okk");
-                case "GET" -> handleUserInfo(httpExchange);//Usamos el verbo GET (Dame información, solo quiero consultar).
-                case "POST" -> handleCreateUser(httpExchange); //Usamos el verbo POST (Te envío datos nuevos para que los guardes)
-                case "PUT" -> sendOk(httpExchange, "PUT user"); // Usamos PUT (Reemplaza este dato por completo)
-                case "PATCH" -> sendOk(httpExchange, "PATCH user"); //PATCH (Modifica solo una pequeña parte del dato).
-                case "DELETE" -> handleDeleteUser(httpExchange); //Usamos el verbo DELETE (Elimina este dato de la base de datos).
+                case "GET" -> sendOk(httpExchange, "GET event");//Usamos el verbo GET (Dame información, solo quiero consultar).
+                case "POST" -> sendOk(httpExchange, "POST event"); //Usamos el verbo POST (Te envío datos nuevos para que los guardes)
+                case "PUT" -> sendOk(httpExchange, "PUT event"); // Usamos PUT (Reemplaza este dato por completo)
+                case "PATCH" -> sendOk(httpExchange, "PATCH event"); //PATCH (Modifica solo una pequeña parte del dato).
+                case "DELETE" -> sendOk(httpExchange, "DELETE event"); //Usamos el verbo DELETE (Elimina este dato de la base de datos).
                 default -> sendMethodNotAllowed(httpExchange);
             }
         } catch (Exception exception) {
@@ -41,11 +40,11 @@ public final class EventHandler implements HttpHandler{
     // _______________________________
     // POST / user --> Crear usuario
     // _______________________________
-    private  void handleCreateUser(HttpExchange exchange) throws IOException {
+    /*private  void handleCreateEvent(HttpExchange exchange) throws IOException {
         String body =readRequestBody(exchange);
         CreateUserDto dto = parseCreateUserDto(body);
-        Event user = new Event(dto.name(), dto.email());
-        Event saved = userRepository.save(user);
+        Event event = new Event(dto.name(), dto.email());
+        Event saved = userRepository.save(event);
         String json =
                 "{"
                 + "\"id\":" + saved.getId() + ","
@@ -54,12 +53,12 @@ public final class EventHandler implements HttpHandler{
                 + "\"createdAt\":\"" + saved.getCreatedAt() + "\""
                 + "}";
         JsonResponses.sendJson(exchange, 201, json);
-    }
+    }*/
 
     // _______________________________
     // GET / user --> Mostrar Usuarios
     // _______________________________
-    private void handleUserInfo(HttpExchange exchange) throws IOException {
+    /*private void handleUserInfo(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
 
         //Muestro todos los usuarios
@@ -73,12 +72,12 @@ public final class EventHandler implements HttpHandler{
             handleUserByEmail(exchange);
         }
 
-    }
+    }*/
 
     // _______________________________
     // DELETE / user --> Eliminar usuario
     // _______________________________
-    private  void handleDeleteUser(HttpExchange exchange) throws IOException {
+    /*private  void handleDeleteUser(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
         String userId = path.substring("/user/".length());
         Long id = Long.parseLong(userId);
@@ -93,9 +92,9 @@ public final class EventHandler implements HttpHandler{
                         + "\"Method\": DELETE user,"
                         + "}";
         JsonResponses.sendJson(exchange, 200, json);
-    }
+    }*/
 
-    private  void handleListsUsers(HttpExchange exchange) throws IOException {
+    /*private  void handleListsUsers(HttpExchange exchange) throws IOException {
 
         String path = exchange.getRequestURI().getPath();
         List<Event> users = userRepository.findAll();
@@ -115,9 +114,9 @@ public final class EventHandler implements HttpHandler{
             json += "}";
 
         JsonResponses.sendJson(exchange, 201, json);
-    }
+    }*/
 
-    private  void handleUserById(HttpExchange exchange) throws IOException {
+    /*private  void handleUserById(HttpExchange exchange) throws IOException {
         //sendOk(exchange, "GET ok ID");
         String path = exchange.getRequestURI().getPath();
         String userId = path.substring("/user/".length());
@@ -135,9 +134,9 @@ public final class EventHandler implements HttpHandler{
 
         JsonResponses.sendJson(exchange, 201, json);
 
-    }
+    }*/
 
-    private  void handleUserByEmail(HttpExchange exchange) throws IOException {
+    /*private  void handleUserByEmail(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
         String email = path.substring("/user/email/".length());
         Optional<Event> user = userRepository.findByEmail(email);
@@ -151,11 +150,11 @@ public final class EventHandler implements HttpHandler{
                         + "}";
 
         JsonResponses.sendJson(exchange, 201, json);
-    }
+    }*/
     // ______________________________
     // Parseo manual de JSON
     // ______________________________
-    private CreateUserDto parseCreateUserDto(String json) {
+    /*private CreateEventDto parseCreateEventDto(String json) {
         json = json.trim();
 
         if (json.startsWith("{")) json = json.substring(1);
@@ -177,9 +176,9 @@ public final class EventHandler implements HttpHandler{
         }
 
         return new CreateUserDto(name, email);
-    }
+    }*/
 
-    private record CreateUserDto(String name, String email) {}
+    //private record CreateUserDto(String name, String email) {}
 
     // __________________________
     // Metodos auxiliares (Aules)

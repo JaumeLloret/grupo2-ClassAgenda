@@ -18,9 +18,9 @@ public final class JdbcEventRepository implements EventRepository {
     }
 
     @Override
-    public Event save(Event userToSave) {
+    public Event save(Event eventToSave) {
         // 1. Traducción inicial
-        EventEntity entityToSave = EventMapper.toEntity(userToSave);
+        EventEntity entityToSave = EventMapper.toEntity(eventToSave);
 
         // 2. Logica de enrutamiento
         if (entityToSave.getId() == null) {
@@ -30,23 +30,33 @@ public final class JdbcEventRepository implements EventRepository {
         } else {
             // Ya existe; lo actualizamos y devolvemos el usuario intacto
             eventDao.update(entityToSave);
-            return userToSave;
+            return eventToSave;
         }
     }
 
     @Override
+    public Optional<Event> findByEmail(String email) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Event> findById(Long id) {
+        return Optional.empty();
+    }
+
+    /*@Override
     public Optional<Event> findByEmail(String email) {
         // En lugar de hacer if/else pesados, la caja Optional tiene un metodo '.map'.
         // Esto le dice a Java: "Si la caja trae una Entity, aplicale el traductor
         // UserMapper:: toDamain dentro de la propia caja y devuelvemela trnsformada"
         return eventDao.findByEmail(email).map(EventMapper::toDomain);
 
-    }
+    }*/
 
-    @Override
+    /*@Override
     public Optional<Event> findById(Long id) {
         return eventDao.findById(id).map(EventMapper::toDomain);
-    }
+    }*/
 
     @Override
     public List<Event> findAll() {
@@ -60,7 +70,12 @@ public final class JdbcEventRepository implements EventRepository {
 
     @Override
     public void deleteById(Long id) {
+
+    }
+
+    /*@Override
+    public void deleteById(Long id) {
         // El borrado no necesita traduccion, simplemente enviamos la orden al DAO
         eventDao.deleteById(id);
-    }
+    }*/
 }

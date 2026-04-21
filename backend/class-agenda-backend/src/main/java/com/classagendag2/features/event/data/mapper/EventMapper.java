@@ -29,13 +29,13 @@ public final class EventMapper {
         if (entity == null) return null;
 
         return new Event(
-                event.getId(),
-                event.getTitle(),
-                event.getDescription(),
-                event.getStatus(),
-                event.getPriority(),
-                event.getOwner_id(),
-                event.getCreatedAt()
+                entity.getId(),
+                entity.getTitle(),
+                entity.getDescription(),
+                entity.getStatus(),
+                entity.getPriority(),
+                entity.getOwner_id(),
+                entity.getCreatedAt()
         );
     }
 }
