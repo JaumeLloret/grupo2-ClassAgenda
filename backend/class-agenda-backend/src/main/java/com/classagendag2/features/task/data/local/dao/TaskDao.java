@@ -15,7 +15,7 @@ public final class TaskDao {
     }
 
     public TaskEntity insert(TaskEntity entity) {
-        String query = "INSERT INTO TASKS (title, description, status, priority, owner_user_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO TASKS (title, description, status, priority, owner_user_id, created_at) VALUES (?, ?, ?, ?, ?, ?)";
         // Para protegernos absolutamente de la Inyección SQL, usamos siempre PreparedStatement con interrogaciones (?)
         try (PreparedStatement pstmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, entity.getTitle());
@@ -23,7 +23,7 @@ public final class TaskDao {
             pstmt.setString(3, entity.getStatus());
             pstmt.setString(4, entity.getPriority());
             pstmt.setLong(5, entity.getOwnerId());
-            pstmt.setObject(7, entity.getCreatedAt());
+            pstmt.setObject(6, entity.getCreatedAt());
 
 
             pstmt.executeUpdate();
@@ -46,7 +46,7 @@ public final class TaskDao {
             pstmt.setString(2, entity.getDescription());
             pstmt.setString(3, entity.getStatus());
             pstmt.setString(4, entity.getPriority());
-            pstmt.setLong(6, entity.getId());
+            pstmt.setLong(5, entity.getId());
 
             int rows = pstmt.executeUpdate();
             if (rows == 0) throw new SQLException("Update fallido: Tarea inexistente.");
