@@ -1,16 +1,17 @@
 package com.classagendag2.features.task.presentation.json;
 
-import com.classagendag2.features.task.domain.model.Task;
+import com.classagendag2.features.task.domain.model._Task;
 import com.classagendag2.features.task.domain.model.TaskPriority;
 import com.classagendag2.features.task.domain.model.TaskStatus;
 
 import java.util.List;
 
-public final class TaskJson {
+public final class _TaskJson {
 
     public record ParsedTask(
             String title,
             String description,
+            String dueDate,
             TaskStatus status,
             TaskPriority priority
     ) {}
@@ -18,6 +19,7 @@ public final class TaskJson {
     public static ParsedTask fromJson(String json) {
         String title = null;
         String description = null;
+        String dueDate = null;
         TaskStatus status = null;
         TaskPriority priority = null;
 
@@ -34,15 +36,16 @@ public final class TaskJson {
             switch (key) {
                 case "title" -> title = value;
                 case "description" -> description = value;
+                case "dueDate" -> dueDate = value;
                 case "status" -> status = TaskStatus.valueOf(value);
                 case "priority" -> priority = TaskPriority.valueOf(value);
             }
         }
 
-        return new ParsedTask(title, description, status, priority);
+        return new ParsedTask(title, description, dueDate, status, priority);
     }
 
-    public static String toJson(Task t) {
+    public static String toJson(_Task t) {
         String descriptionJson =
                 t.getDescription() == null ? "null" : "\"" + t.getDescription() + "\"";
 
@@ -52,6 +55,7 @@ public final class TaskJson {
           "ownerUserId": %d,
           "title": "%s",
           "description": %s,
+          "dueDate": "%s",
           "status": "%s",
           "priority": "%s",
           "createdAt": "%s",
@@ -65,13 +69,14 @@ public final class TaskJson {
                 t.getOwnerId(),
                 t.getTitle(),
                 descriptionJson,
+                t.getDueDate(),
                 t.getStatus().name(),
                 t.getPriority().name(),
                 t.getCreatedAt()
         );
     }
 
-    public static String toJsonList(List<Task> list) {
+    public static String toJsonList(List<_Task> list) {
         StringBuilder sb = new StringBuilder("{\"items\":[");
         for (int i = 0; i < list.size(); i++) {
             sb.append(toJson(list.get(i)));

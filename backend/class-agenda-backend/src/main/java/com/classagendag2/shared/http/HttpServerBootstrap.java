@@ -1,6 +1,6 @@
 package com.classagendag2.shared.http;
 
-import com.classagendag2.features.task.presentation.router.TaskRouter;
+import com.classagendag2.features.task.presentation.router._TaskRouter;
 import com.classagendag2.features.user.presentation.router.UserRouter;
 import com.classagendag2.features.event.presentation.router.EventRouter;
 import com.classagendag2.shared.config.ServerConfig;
@@ -23,7 +23,7 @@ public final class HttpServerBootstrap {
         httpServer.createContext("/health", new HealthHandler());
         ExampleRouter.registerRoutes(httpServer);
         UserRouter.registerRoutes(httpServer);
-        TaskRouter.registerRoutes(httpServer);
+        _TaskRouter.registerRoutes(httpServer);
         EventRouter.registerRoutes(httpServer);
 
         // 4.Encendemos el servidor para que empiece a escuchar infinitamente
@@ -39,7 +39,7 @@ public final class HttpServerBootstrap {
         httpServer.createContext("/health", new HealthHandler());
         ExampleRouter.registerRoutes(httpServer);
         UserRouter.registerRoutes(httpServer);
-        TaskRouter.registerRoutes(httpServer);
+        _TaskRouter.registerRoutes(httpServer);
         EventRouter.registerRoutes(httpServer);
 
         httpServer.start();

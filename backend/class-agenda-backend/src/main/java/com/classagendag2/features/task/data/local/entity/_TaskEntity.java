@@ -2,25 +2,27 @@ package com.classagendag2.features.task.data.local.entity;
 
 import java.time.LocalDateTime;
 
-public final class TaskEntity {
+public final class _TaskEntity {
     private Long id;
     private String title;
     private String description;
     private String status; // Guardará el texto literal para SQL
     private String priority; // Guardará el texto literal para SQL
     private Long ownerId;
+    private String dueDate;
     private LocalDateTime createdAt;
 
     // Constructor vacío obligatorio para los estándares de serialización de Java
-    public TaskEntity() {}
+    public _TaskEntity() {}
 
-    public TaskEntity(Long id, String title, String description, String status, String priority, Long ownerId, LocalDateTime createdAt) {
+    public _TaskEntity(Long id, String title, String description, String status, String priority, Long ownerId, String dueDate, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.status = status;
         this.priority = priority;
         this.ownerId = ownerId;
+        this.dueDate = dueDate;
         this.createdAt = createdAt;
     }
 
@@ -42,6 +44,9 @@ public final class TaskEntity {
 
     public Long getOwnerId() { return ownerId; }
     public void setOwnerId(Long ownerId) { this.ownerId = ownerId; }
+
+    public String getDueDate() { return dueDate; }
+    public void setDueDate(String dueDate) { this.dueDate = dueDate;}
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

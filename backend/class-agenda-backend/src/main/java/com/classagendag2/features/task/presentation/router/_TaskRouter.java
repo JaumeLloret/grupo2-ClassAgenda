@@ -9,8 +9,8 @@ import com.sun.net.httpserver.HttpServer;
 
 import java.sql.SQLException;
 
-public final class TaskRouter {
-    private TaskRouter() {}
+public final class _TaskRouter {
+    private _TaskRouter() {}
 
     public static void registerRoutes(HttpServer httpServer) {
 

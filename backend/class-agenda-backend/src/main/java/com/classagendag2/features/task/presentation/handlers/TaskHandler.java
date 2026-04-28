@@ -1,12 +1,11 @@
 package com.classagendag2.features.task.presentation.handlers;
 
 import com.classagendag2.features.task.domain.model.Task;
+import com.classagendag2.features.task.domain.model.TaskPriority;
 import com.classagendag2.features.task.domain.model.TaskStatus;
 import com.classagendag2.features.task.domain.repository.TaskRepository;
-import com.classagendag2.features.task.presentation.json.TaskJson;
 import com.classagendag2.shared.http.JsonResponses;
 import com.classagendag2.shared.http.ResponseContract;
-import com.classagendag2.shared.http.helpers.JsonEscaper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
@@ -15,223 +14,150 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
-public final class TaskHandler  implements HttpHandler{
+public final class TaskHandler implements HttpHandler {
+
     private final TaskRepository taskRepository;
 
+    // Inyectamos el Repositorio desde el exterior
     public TaskHandler(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
+
     }
 
     @Override
-    public void handle(HttpExchange httpExchange) throws IOException {
+    public void handle(HttpExchange exchange) throws IOException {
         try {
-            String method = httpExchange.getRequestMethod();
-            String path = httpExchange.getRequestURI().getPath();
-            String query = httpExchange.getRequestURI().getQuery();
+            // 1. Extraemos quién está haciendo la petición desde la cabecera de seguridad
+            String userIdHeader = exchange.getRequestHeaders().getFirst("X-User-Id");
+            if (userIdHeader == null || userIdHeader.isBlank()) {
+                JsonResponses.sendJson(exchange, 401, ResponseContract.errorJson("No autorizado", "Falta la cabecera X-User-Id"));
+                return;
+            }
+            Long requestingUserId = Long.parseLong(userIdHeader);
 
-            Long userId = getUserId(httpExchange);
-            if (userId == null) return;
-
-            Long taskId = extractId(path);
-
+            // 2. Enrutamos según el verbo HTTP
+            String method = exchange.getRequestMethod();
             switch (method) {
-                case "GET" -> handleGet(httpExchange, userId, taskId, query);
-                case "POST" -> handlePost(httpExchange, userId);
-                case "PUT" -> handlePut(httpExchange, userId, taskId);
-                case "DELETE" -> handleDelete(httpExchange, userId, taskId);
-                default -> sendMethodNotAllowed(httpExchange);
+                case "POST" -> handlePost(exchange, requestingUserId);
+                case "GET" -> handleGet(exchange, requestingUserId);
+                case "PUT" -> handlePut(exchange, requestingUserId);
+                case "DELETE" -> handleDelete(exchange, requestingUserId);
+                default ->
+                        JsonResponses.sendJson(exchange, 405, ResponseContract.errorJson("Método no permitido", null));
             }
-        } catch (Exception exception) {
-            sendServerError(httpExchange, exception.getMessage());
+        } catch (SecurityException e) {
+            JsonResponses.sendJson(exchange, 403, ResponseContract.errorJson("Prohibido", e.getMessage()));
+        } catch (Exception e) {
+            JsonResponses.sendJson(exchange, 500, ResponseContract.errorJson("Error interno", e.getMessage()));
         }
     }
 
-    // __________________________
-    // Metodos auxiliares (Aules)
-    // __________________________
-    private void sendOk(HttpExchange httpExchange, String message) throws IOException {
-        String receivedBody = readRequestBody(httpExchange);
-        String dataJson = "{"
-                + "\"endpoint\":\"task\","
-                + "\"method\":\"" + httpExchange.getRequestMethod() + "\","
-                + "\"message\":\"" + JsonEscaper.escape(message) + "\","
-                + "\"receivedBody\":" + toNullableJsonString(receivedBody)
-                + "}";
-        String responseJson = ResponseContract.okJson(dataJson);
-        JsonResponses.sendJson(httpExchange, 200, responseJson);
-    }
+    private void handlePost(HttpExchange exchange, Long requestingUserId) throws Exception {
+        // 1. Leemos el cuerpo de la petición (JSON crudo) a texto
+        InputStream is = exchange.getRequestBody();
+        String jsonBody = new String(is.readAllBytes(), StandardCharsets.UTF_8);
 
-    private String readRequestBody(HttpExchange httpExchange) throws IOException {
-        InputStream requestBodyStream = httpExchange.getRequestBody();
-        if (requestBodyStream == null) return null;
-        byte[] bodyBytes = requestBodyStream.readAllBytes();
-        if (bodyBytes.length == 0) return null;
-        return new String(bodyBytes, StandardCharsets.UTF_8);
-    }
+        // (En un entorno profesional usaríamos Jackson ObjectMapper aquí.
+        // Para mantenernos libres de dependencias, simularemos la extracción manual o usaremos un parser propio)
+        String title = extractJsonField(jsonBody, "title");
+        String description = extractJsonField(jsonBody, "description");
+        String priorityStr = extractJsonField(jsonBody, "priority");
 
-    private String toNullableJsonString(String rawValue) {
-        if (rawValue == null) return "null";
-        return "\"" + JsonEscaper.escape(rawValue) + "\"";
-    }
-
-    private void sendMethodNotAllowed(HttpExchange httpExchange) throws IOException {
-        httpExchange.getResponseHeaders().set("Allow", "GET, POST, PUT, PATCH, DELETE");
-        String responseJson = ResponseContract.errorJson("Method not allowed", null);
-        JsonResponses.sendJson(httpExchange, 405, responseJson);
-    }
-
-    private void sendServerError(HttpExchange httpExchange, String errorDetails) throws IOException {
-        String responseJson = ResponseContract.errorJson("Internal server error", errorDetails);
-        JsonResponses.sendJson(httpExchange, 500, responseJson);
-    }
-    private void handleGet(HttpExchange ex, Long userId, Long taskId, String query) throws IOException {
-        if (taskId != null) {
-            var opt = taskRepository.findById(taskId);
-            if (opt.isEmpty()) {
-                sendError(ex, 404, "NOT_FOUND", "La tarea no existe");
-                return;
-            }
-
-            var task = opt.get();
-            if (!task.getOwnerId().equals(userId)) {
-                sendError(ex, 404, "NOT_FOUND", "No tienes acceso a esta tarea");
-                return;
-            }
-
-            sendJson(ex, 200, TaskJson.toJson(task));
-            return;
-        }
-
-        // Filtro simple: ?status=PENDING
-        if (query != null && query.contains("status=")) {
-            String status = query.split("=")[1];
-            var list = taskRepository.findByOwnerIdAndStatus(userId, TaskStatus.valueOf(status));
-            sendJson(ex, 200, TaskJson.toJsonList(list));
-            return;
-        }
-
-        var list = taskRepository.findByOwnerId(userId);
-        sendJson(ex, 200, TaskJson.toJsonList(list));
-    }
-    private void handlePost(HttpExchange ex, Long userId) throws IOException {
-        String body = readRequestBody(ex);
-        TaskJson.ParsedTask data = TaskJson.fromJson(body);
-
-        Task task = new Task(
-                data.title(),
-                data.description(),
-                data.priority(),
-                userId,
-                data.dueDate()
+        // 2. Convertimos a nuestro modelo de Dominio puro. ¡Fijaos que le pasamos el ID del usuario directamente!
+        Task newTask = new Task(
+                title,
+                description,
+                TaskPriority.valueOf(priorityStr.toUpperCase()),
+                requestingUserId
         );
 
+        // 3. Guardamos a través del repositorio y devolvemos la respuesta al cliente
+        Task savedTask = taskRepository.save(newTask);
 
-        Task saved = taskRepository.save(task);
-        sendJson(ex, 201, TaskJson.toJson(saved));
-    }
-    private void handlePut(HttpExchange ex, Long userId, Long taskId) throws IOException {
-        if (taskId == null) {
-            sendError(ex, 400, "BAD_REQUEST", "Falta ID en la URL");
-            return;
-        }
-
-        var opt = taskRepository.findById(taskId);
-        if (opt.isEmpty()) {
-            sendError(ex, 404, "NOT_FOUND", "La tarea no existe");
-            return;
-        }
-
-        var existing = opt.get();
-        if (!existing.getOwnerId().equals(userId)) {
-            sendError(ex, 403, "FORBIDDEN", "No puedes modificar esta tarea");
-            return;
-        }
-
-        String body = readRequestBody(ex);
-        TaskJson.ParsedTask data = TaskJson.fromJson(body);
-
-        //solo cambio de datos enviados.
-        Task updated = new Task(
-                existing.getId(),
-                data.title() != null ? data.title() : existing.getTitle(),
-                data.description() != null ? data.description() : existing.getDescription(),
-                data.status() != null ? data.status() : existing.getStatus(),
-                data.priority() != null ? data.priority() : existing.getPriority(),
-                existing.getOwnerId(),
-                data.dueDate() != null ? data.dueDate() : existing.getDueDate(),
-                existing.getCreatedAt()
+        // Creamos un JSON de respuesta manual para este ejemplo
+        String responseData = String.format(
+                "{\"id\":%d, \"title\":\"%s\", \"status\":\"%s\"}",
+                savedTask.getId(), savedTask.getTitle(), savedTask.getStatus().name()
         );
 
-
-
-        taskRepository.save(updated);
-        sendJson(ex, 200, TaskJson.toJson(updated));
+        JsonResponses.sendJson(exchange, 201, ResponseContract.okJson(responseData));
     }
-    private void handleDelete(HttpExchange ex, Long userId, Long taskId) throws IOException {
-        if (taskId == null) {
-            sendError(ex, 400, "BAD_REQUEST", "Falta ID en la URL");
+
+    // Método auxiliar ultra-simplificado para extraer valores de un JSON nativamente.
+    // OJO: En la empresa real se usa librerías como Jackson.
+    private String extractJsonField(String json, String field) {
+        String key = "\"" + field + "\":";
+        int start = json.indexOf(key);
+        if (start == -1) return "";
+        start += key.length();
+        int end = json.indexOf(",", start);
+        if (end == -1) end = json.indexOf("}", start);
+        return json.substring(start, end).replace("\"", "").trim();
+    }
+
+    private void handleGet(HttpExchange exchange, Long requestingUserId) throws Exception {
+        // Obtenemos todo lo que hay en la URL después de la interrogación (?)
+        String queryParams = exchange.getRequestURI().getQuery();
+
+        List<Task> tasks;
+
+        // Comprobamos si el usuario ha enviado un filtro de estado
+        if (queryParams != null && queryParams.contains("status=")) {
+            // Parseamos el valor (ej. status=PENDING -> extraemos PENDING)
+            String statusParam = queryParams.split("status=")[1].split("&")[0];
+            TaskStatus statusToFilter = TaskStatus.valueOf(statusParam.toUpperCase());
+
+            // Llamamos a nuestro Repositorio usando el filtro múltiple (Dueño + Estado)
+            tasks = taskRepository.findByOwnerIdAndStatus(requestingUserId, statusToFilter);
+        } else {
+            // Si no hay filtros, le devolvemos todas SUS tareas
+            tasks = taskRepository.findByOwnerId(requestingUserId);
+        }
+
+        // Transformamos la lista Java a formato JSON
+        StringBuilder jsonArray = new StringBuilder("[");
+        for (int i = 0; i < tasks.size(); i++) {
+            Task t = tasks.get(i);
+            jsonArray.append(String.format(
+                    "{\"id\":%d, \"title\":\"%s\", \"status\":\"%s\", \"priority\":\"%s\"}",
+                    t.getId(), t.getTitle(), t.getStatus().name(), t.getPriority().name()
+            ));
+            if (i < tasks.size() - 1) jsonArray.append(",");
+        }
+        jsonArray.append("]");
+
+        JsonResponses.sendJson(exchange, 200, ResponseContract.okJson(jsonArray.toString()));
+    }
+
+    private void handleDelete(HttpExchange exchange, Long requestingUserId) throws Exception {
+        String queryParams = exchange.getRequestURI().getQuery();
+        if (queryParams == null || !queryParams.contains("id=")) {
+            throw new IllegalArgumentException("Debe proporcionar el ID de la tarea a borrar (?id=X)");
+        }
+
+        Long taskId = Long.parseLong(queryParams.split("id=")[1].split("&")[0]);
+
+        // 1. Buscamos la tarea en la Base de Datos
+        Optional<Task> optionalTask = taskRepository.findById(taskId);
+        if (optionalTask.isEmpty()) {
+            JsonResponses.sendJson(exchange, 404, ResponseContract.errorJson("No encontrado", "La tarea no existe"));
             return;
         }
 
-        var opt = taskRepository.findById(taskId);
-        if (opt.isEmpty()) {
-            sendError(ex, 404, "NOT_FOUND", "La tarea no existe");
-            return;
-        }
+        // 2. LA BARRERA DE SEGURIDAD
+        // Si el usuario 2 intenta borrar la tarea del usuario 5, este método lanzará una excepción y abortará el proceso.
+        Task taskToModify = optionalTask.get();
+        taskToModify.validateIsOwnedBy(requestingUserId);
 
-        if (!opt.get().getOwnerId().equals(userId)) {
-            sendError(ex, 403, "FORBIDDEN", "Solo el owner puede borrar");
-            return;
-        }
-
+        // 3. Ejecución autorizada
         taskRepository.deleteById(taskId);
-        JsonResponses.sendJson(ex, 204, ""); // sin cuerpo
+        JsonResponses.sendJson(exchange, 200, ResponseContract.okJson("{\"message\":\"Tarea borrada exitosamente\"}"));
     }
 
-// ---------------------------
-// Helpers nuevos
-// ---------------------------
-
-    // Validar X-User-Id
-    private Long getUserId(HttpExchange ex) throws IOException {
-        String header = ex.getRequestHeaders().getFirst("X-User-Id");
-        if (header == null) {
-            sendError(ex, 400, "BAD_REQUEST", "Falta cabecera X-User-Id");
-            return null;
-        }
-        try {
-            return Long.parseLong(header);
-        } catch (NumberFormatException e) {
-            sendError(ex, 400, "BAD_REQUEST", "X-User-Id debe ser un entero");
-            return null;
-        }
+    private void handlePut(HttpExchange exchange, Long requestingUserId) throws Exception {
+        // Implementación similar: Buscar, Validar Propiedad (validateIsOwnedBy), Leer JSON y Guardar (taskRepository.save).
+        // (La lógica es un híbrido entre el POST y el DELETE. Se deja como ejercicio final ensamblarla).
+        JsonResponses.sendJson(exchange, 200, ResponseContract.okJson("{\"message\":\"Endpoint PUT listo para implementar\"}"));
     }
-
-    // Extraer ID de /tasks/{id}
-    private Long extractId(String path) {
-        try {
-            String[] parts = path.split("/");
-            if (parts.length == 3) return Long.parseLong(parts[2]);
-        } catch (Exception ignored) {}
-        return null;
-    }
-
-    // Enviar error según contrato
-    private void sendError(HttpExchange ex, int status, String code, String message) throws IOException {
-        String json = """
-    {
-      "error": {
-        "code": "%s",
-        "message": "%s"
-      }
-    }
-    """.formatted(code, message);
-        JsonResponses.sendJson(ex, status, json);
-    }
-
-    // Enviar JSON normal
-    private void sendJson(HttpExchange ex, int status, String json) throws IOException {
-        JsonResponses.sendJson(ex, status, json);
-    }
-
 }
+

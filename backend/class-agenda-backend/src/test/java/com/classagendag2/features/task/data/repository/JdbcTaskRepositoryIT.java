@@ -1,8 +1,8 @@
 package com.classagendag2.features.task.data.repository;
 
 import com.classagendag2.features.example.data.local.connection.DbConnectionFactory;
-import com.classagendag2.features.task.data.local.dao.TaskDao;
-import com.classagendag2.features.task.domain.model.Task;
+import com.classagendag2.features.task.data.local.dao._TaskDao;
+import com.classagendag2.features.task.domain.model._Task;
 import com.classagendag2.features.task.domain.model.TaskPriority;
 import com.classagendag2.features.task.domain.model.TaskStatus;
 import com.classagendag2.features.user.data.local.dao.UserDao;
@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,11 +39,11 @@ class JdbcTaskRepositoryIT {
             // 2. INYECCIÓN: Suministramos exactamente la MISMA conexión a ambos DAOs.
             // Esto es lo que permite que en el futuro puedan realizar Transacciones conjuntas (todo o nada).
             UserDao userDao = new UserDao(sharedConnection);
-            TaskDao taskDao = new TaskDao(sharedConnection);
+            _TaskDao taskDao = new _TaskDao(sharedConnection);
 
             // 3. Ensamblamos los Repositorios de alto nivel inyectando los DAOs
             JdbcUserRepository userRepository = new JdbcUserRepository(userDao);
-            JdbcTaskRepository taskRepository = new JdbcTaskRepository(taskDao);
+            _JdbcTaskRepository taskRepository = new _JdbcTaskRepository(taskDao);
             // === FASE 1: INTEGRIDAD REFERENCIAL (Trampa de la Clave Foránea) ===
             // Para poder crear una tarea en SQL Server, necesitamos primero un dueño real insertado.
             // Usamos System.currentTimeMillis() para generar un email distinto en cada ejecución
@@ -55,14 +54,14 @@ class JdbcTaskRepositoryIT {
             Long currentOwnerId = savedOwner.getId();
 
             // === FASE 2: OPERACIÓN CREATE ===
-            Task newTask = new Task("Revisión de Arquitectura", "Analizar patrón DI", TaskPriority.HIGH, currentOwnerId, "2026-01-01");
-            Task savedTask = taskRepository.save(newTask);
+            _Task newTask = new _Task("Revisión de Arquitectura", "Analizar patrón DI", TaskPriority.HIGH, currentOwnerId, "2026-01-01");
+            _Task savedTask = taskRepository.save(newTask);
 
             assertNotNull(savedTask.getId(), "El motor SQL debe proveer un identificador primario numérico.");
             assertEquals(TaskStatus.PENDING, savedTask.getStatus(), "Toda instancia de tarea nueva inicia en estado PENDING.");
 
             // === FASE 3: VALIDACIÓN DE FILTRADO MÚLTIPLE (AND) ===
-            List<Task> pendingTasks = taskRepository.findByOwnerIdAndStatus(currentOwnerId, TaskStatus.PENDING);
+            List<_Task> pendingTasks = taskRepository.findByOwnerIdAndStatus(currentOwnerId, TaskStatus.PENDING);
             assertEquals(1, pendingTasks.size(), "El filtro debe recuperar exactamente la tarea recién insertada.");
             assertEquals(savedTask.getId(), pendingTasks.get(0).getId());
 
@@ -70,7 +69,7 @@ class JdbcTaskRepositoryIT {
             // Verificamos que nuestro código de Dominio aprueba los permisos antes de hacer un cambio
             assertDoesNotThrow(() -> savedTask.validateIsOwnedBy(currentOwnerId));
 
-            Task taskToUpdate = new Task(
+            _Task taskToUpdate = new _Task(
                     savedTask.getId(), // Al proveer el mismo ID, el repositorio sabrá que debe hacer un UPDATE
                     "Revisión Finalizada",
                     savedTask.getDescription(),
@@ -83,7 +82,7 @@ class JdbcTaskRepositoryIT {
             taskRepository.save(taskToUpdate);
 
             // Vamos a la base de datos a comprobar que el UPDATE ha sido efectivo
-            Optional<Task> verifiedTask = taskRepository.findById(savedTask.getId());
+            Optional<_Task> verifiedTask = taskRepository.findById(savedTask.getId());
             assertTrue(verifiedTask.isPresent());
             assertEquals(TaskStatus.COMPLETED, verifiedTask.get().getStatus());
 
