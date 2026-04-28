@@ -186,6 +186,7 @@ Relaciones principales:
 Este sprint implementa la primera entidad completa del proyecto: User, siguiendo Clean Architecture, SOLID y acceso a datos mediante JDBC.
 La API expone un CRUD funcional para gestionar usuarios en la base de datos SQL Server.
 
+<<<<<<< HEAD
 ### 🧱 Arquitectura aplicada en este sprint
 El módulo de usuarios se ha construido siguiendo las capas de Clean Architecture:
 - Dominio
@@ -197,6 +198,10 @@ El módulo de usuarios se ha construido siguiendo las capas de Clean Architectur
 - UserMapper (traducción Entity ↔ Dominio)
 - JdbcUserRepository (implementación del contrato del Dominio)
 - Presentación
+=======
+### 📌 Estado actual
+La API incluye por ahora un único endpoint funcional que permite verificar que el servidor está operativo.
+>>>>>>> 45723a861f6bdea8b919b305738ba4a2867969f8
 
 ### 🧩 Modelo de Dominio: User
 El objeto User representa un usuario válido según las reglas de negocio:
@@ -324,6 +329,10 @@ GET http://localhost:8080/example/intro
   }
 }
 ```
+<<<<<<< HEAD
+=======
+
+>>>>>>> 45723a861f6bdea8b919b305738ba4a2867969f8
 ---
 
 ## 🛠 Endpoints en desarrollo
@@ -335,6 +344,7 @@ shared/http/handlers
 
 A medida que se implementen nuevos handlers y routers, se irán documentando en esta sección.
 
+<<<<<<< HEAD
 ## 🟦 API - CRUD de TAREAS (Sprint 5)
 ### Arquitectura aplicada en este sprint
 
@@ -482,6 +492,8 @@ Respuesta:
   }
 }
 ```
+=======
+>>>>>>> 45723a861f6bdea8b919b305738ba4a2867969f8
 
 ## 🖥️ Cliente web
 
