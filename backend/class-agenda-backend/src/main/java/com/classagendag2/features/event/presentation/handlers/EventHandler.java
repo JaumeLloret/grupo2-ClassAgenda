@@ -10,24 +10,32 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 public final class EventHandler implements HttpHandler{
 
-    private final EventRepository userRepository;
+    private final EventRepository eventRepository;
 
-    public EventHandler(EventRepository userRepository) {
-        this.userRepository = userRepository;
+
+    public EventHandler(EventRepository eventRepository) {
+        this.eventRepository = eventRepository;
     }
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
+
+        //lectura del ownerId para el POST
+        String ownerHeader = httpExchange.getRequestHeaders().getFirst("X-User-Id");
+        Long ownerId = Long.parseLong(ownerHeader);
+
         try {
             String httpMethod = httpExchange.getRequestMethod();
             switch (httpMethod) {
-                case "GET" -> sendOk(httpExchange, "GET event");//Usamos el verbo GET (Dame información, solo quiero consultar).
-                case "POST" -> sendOk(httpExchange, "POST event"); //Usamos el verbo POST (Te envío datos nuevos para que los guardes)
+                case "GET" -> handleGet(httpExchange, ownerId); //Usamos el verbo GET (Dame información, solo quiero consultar).
                 case "PUT" -> sendOk(httpExchange, "PUT event"); // Usamos PUT (Reemplaza este dato por completo)
+                case "POST" -> handlePost(httpExchange, ownerId);
                 case "PATCH" -> sendOk(httpExchange, "PATCH event"); //PATCH (Modifica solo una pequeña parte del dato).
                 case "DELETE" -> sendOk(httpExchange, "DELETE event"); //Usamos el verbo DELETE (Elimina este dato de la base de datos).
                 default -> sendMethodNotAllowed(httpExchange);
@@ -37,152 +45,154 @@ public final class EventHandler implements HttpHandler{
         }
     }
 
-    // _______________________________
-    // POST / user --> Crear usuario
-    // _______________________________
-    /*private  void handleCreateEvent(HttpExchange exchange) throws IOException {
-        String body =readRequestBody(exchange);
-        CreateUserDto dto = parseCreateUserDto(body);
-        Event event = new Event(dto.name(), dto.email());
-        Event saved = userRepository.save(event);
-        String json =
-                "{"
-                + "\"id\":" + saved.getId() + ","
-                + "\"name\":\"" + JsonEscaper.escape(saved.getName()) + "\","
-                + "\"email\":\"" + JsonEscaper.escape(saved.getEmail()) + "\","
-                + "\"createdAt\":\"" + saved.getCreatedAt() + "\""
-                + "}";
-        JsonResponses.sendJson(exchange, 201, json);
-    }*/
-
-    // _______________________________
-    // GET / user --> Mostrar Usuarios
-    // _______________________________
-    /*private void handleUserInfo(HttpExchange exchange) throws IOException {
+    private void handleGet(HttpExchange exchange, Long ownerId) throws IOException {
         String path = exchange.getRequestURI().getPath();
 
-        //Muestro todos los usuarios
-        if(path.equals("/user/")){
-            handleListsUsers(exchange);
-        } //Busqueda por ID
-        else if (path.matches("/user/\\d+")) {
-            handleUserById(exchange);
-        }  //Busqueda por email
-        else if (path.startsWith("/user/email/")){
-            handleUserByEmail(exchange);
+        // GET /event → listar eventos
+        if (path.equals("/event")) {
+            var events = eventRepository.findAllByOwner(ownerId);
+            JsonResponses.sendJson(exchange, 200, ResponseContract.okJson(eventsListToJson(events)));
+            return;
         }
 
-    }*/
-
-    // _______________________________
-    // DELETE / user --> Eliminar usuario
-    // _______________________________
-    /*private  void handleDeleteUser(HttpExchange exchange) throws IOException {
-        String path = exchange.getRequestURI().getPath();
-        String userId = path.substring("/user/".length());
-        Long id = Long.parseLong(userId);
-
-        userRepository.deleteById(id);
-
-
-        //sendOk(exchange, "DELETE user: " + id);
-        String json =
-                "{"
-                        + "\"id\":" + id + ","
-                        + "\"Method\": DELETE user,"
-                        + "}";
-        JsonResponses.sendJson(exchange, 200, json);
-    }*/
-
-    /*private  void handleListsUsers(HttpExchange exchange) throws IOException {
-
-        String path = exchange.getRequestURI().getPath();
-        List<Event> users = userRepository.findAll();
-
-        String json =
-                    "{"
-                            + "\"items\": ";
-
-            for(int i = 0; i< users.size();i++){
-                json += "["
-                        + "\"id\":" + users.get(i).getId() + ","
-                        + "\"name\":\"" + JsonEscaper.escape(users.get(i).getName()) + "\","
-                        + "\"email\":\"" + JsonEscaper.escape(users.get(i).getEmail()) + "\","
-                        + "\"createdAt\":\"" + users.get(i).getCreatedAt() + "\""
-                        + "]";
+        // GET /event/{id}
+        if (path.startsWith("/event/")) {
+            String[] parts = path.split("/");
+            if (parts.length != 3) {
+                sendError(exchange, 400, "Formato de URL inválido");
+                return;
             }
-            json += "}";
 
-        JsonResponses.sendJson(exchange, 201, json);
-    }*/
+            Long eventId;
+            try {
+                eventId = Long.parseLong(parts[2]);
+            } catch (NumberFormatException e) {
+                sendError(exchange, 400, "ID inválido");
+                return;
+            }
 
-    /*private  void handleUserById(HttpExchange exchange) throws IOException {
-        //sendOk(exchange, "GET ok ID");
-        String path = exchange.getRequestURI().getPath();
-        String userId = path.substring("/user/".length());
-        Long id = Long.parseLong(userId);
+            var eventOpt = eventRepository.findById(eventId);
 
-        Optional<Event> user = userRepository.findById(id);
+            if (eventOpt.isEmpty()) {
+                sendError(exchange, 404, "Evento no encontrado");
+                return;
+            }
 
-        String json =
-                "{"
-                        + "\"id\":" + user.get().getId() + ","
-                        + "\"name\":\"" + JsonEscaper.escape(user.get().getName()) + "\","
-                        + "\"email\":\"" + JsonEscaper.escape(user.get().getEmail()) + "\","
-                        + "\"createdAt\":\"" + user.get().getCreatedAt() + "\""
-                        + "}";
+            Event event = eventOpt.get();
 
-        JsonResponses.sendJson(exchange, 201, json);
+            if (event.getOwner_id() != ownerId) {
+                sendError(exchange, 403, "No tienes permiso para ver este evento");
+                return;
+            }
 
-    }*/
-
-    /*private  void handleUserByEmail(HttpExchange exchange) throws IOException {
-        String path = exchange.getRequestURI().getPath();
-        String email = path.substring("/user/email/".length());
-        Optional<Event> user = userRepository.findByEmail(email);
-
-        String json =
-                "{"
-                        + "\"id\":" + user.get().getId() + ","
-                        + "\"name\":\"" + JsonEscaper.escape(user.get().getName()) + "\","
-                        + "\"email\":\"" + JsonEscaper.escape(user.get().getEmail()) + "\","
-                        + "\"createdAt\":\"" + user.get().getCreatedAt() + "\""
-                        + "}";
-
-        JsonResponses.sendJson(exchange, 201, json);
-    }*/
-    // ______________________________
-    // Parseo manual de JSON
-    // ______________________________
-    /*private CreateEventDto parseCreateEventDto(String json) {
-        json = json.trim();
-
-        if (json.startsWith("{")) json = json.substring(1);
-        if (json.endsWith("}")) json = json.substring(0, json.length() - 1);
-
-        String[] parts = json.split(",");
-
-        String name = null;
-        String email = null;
-
-        for (String part : parts) {
-            String[] keyValue = part.split(":");
-
-            String key = keyValue[0].trim().replace("\"", "");
-            String value = keyValue[1].trim().replace("\"", "");
-
-            if (key.equals("name")) name = value;
-            if (key.equals("email")) email = value;
+            JsonResponses.sendJson(exchange, 200, ResponseContract.okJson(eventToJson(event)));
+            return;
         }
 
-        return new CreateUserDto(name, email);
-    }*/
+        sendError(exchange, 404, "Ruta no encontrada");
+    }
 
-    //private record CreateUserDto(String name, String email) {}
+    private String eventToJson(Event e) {
+        return """
+    {
+      "id": %d,
+      "title": "%s",
+      "description": "%s",
+      "location": "%s",
+      "startAt": "%s",
+      "endAt": "%s",
+      "ownerId": %d,
+      "createdAt": "%s"
+    }
+    """.formatted(
+                e.getId(),
+                JsonEscaper.escape(e.getTitle()),
+                JsonEscaper.escape(e.getDescription()),
+                JsonEscaper.escape(e.getLocation()),
+                e.getStart_at(),
+                e.getEnd_at(),
+                e.getOwner_id(),
+                e.getCreated_at()
+        );
+    }
 
-    // __________________________
-    // Metodos auxiliares (Aules)
-    // __________________________
+
+    private String eventsListToJson(List<Event> list) {
+        return list.stream()
+                .map(this::eventToJson)
+                .collect(Collectors.joining(",\n", "[\n", "\n]"));
+    }
+
+
+
+
+    private String extractField(String json, String fieldName) {
+        json = json.replace("\n", "").replace("\r", "").trim();
+
+        String search = "\"" + fieldName + "\"";
+
+        int index = json.indexOf(search);
+        if (index == -1) return null;
+
+        int colonIndex = json.indexOf(":", index);
+        if (colonIndex == -1) return null;
+
+        // Saltar espacios
+        int i = colonIndex + 1;
+        while (i < json.length() && Character.isWhitespace(json.charAt(i))) {
+            i++;
+        }
+
+        // Debe empezar con comillas
+        if (json.charAt(i) != '\"') return null;
+
+        int firstQuote = i;
+        int secondQuote = json.indexOf("\"", firstQuote + 1);
+
+        if (secondQuote == -1) return null;
+
+        return json.substring(firstQuote + 1, secondQuote);
+    }
+
+
+
+    private void sendError(HttpExchange exchange, int status, String message) throws IOException {
+        String json = ResponseContract.errorJson(message, null);
+        JsonResponses.sendJson(exchange, status, json);
+    }
+
+
+    private void handlePost(HttpExchange exchange, Long owner_id) throws IOException {
+        try {
+            String json = readRequestBody(exchange);
+            String rawStart = extractField(json, "startAt");
+            String rawEnd = extractField(json, "endAt");
+
+            LocalDateTime start_at = LocalDateTime.parse(rawStart);
+            LocalDateTime end_at = LocalDateTime.parse(rawEnd);
+
+            Event newEvent = new Event(
+                    extractField(json, "title"),
+                    extractField(json, "description"),
+                    extractField(json, "location"),
+                    start_at,
+                    end_at,
+                    owner_id,
+                    LocalDateTime.now()
+            );
+
+            eventRepository.save(newEvent);
+            JsonResponses.sendJson(exchange, 201, ResponseContract.okJson(null));
+
+        } catch (DateTimeParseException e) {
+            sendError(exchange, 400, "Formato de fecha inválido. Use YYYY-MM-DDTHH:MM:SS");
+        } catch (IllegalArgumentException e) {
+            sendError(exchange, 400, e.getMessage());
+        }
+
+    }
+
+
     private void sendOk(HttpExchange httpExchange, String message) throws IOException {
         String receivedBody = readRequestBody(httpExchange);
         String dataJson = "{"

@@ -483,6 +483,93 @@ Respuesta:
 }
 ```
 
+# 📘 ClassAgenda – Módulo Events
+
+## 📌 Descripción general
+
+El módulo **Events** gestiona los eventos personales de cada usuario dentro de la aplicación ClassAgenda.  
+Toda la funcionalidad está asociada a un usuario concreto mediante la cabecera `X-User-Id`, lo que garantiza que cada persona solo pueda acceder a sus propios eventos.
+
+Este módulo implementa las operaciones básicas de un CRUD: creación, consulta individual, listado, actualización y eliminación.
+
+---
+
+## 📂 Contenido del módulo
+
+El módulo se organiza en tres capas principales:
+
+### 1. **Capa de dominio (`domain/`)**
+Contiene la lógica central del módulo:
+- **Event.java** → Modelo de dominio que representa un evento.
+- **EventRepository.java** → Interfaz que define las operaciones necesarias (save, findById, findAllByOwner, delete).
+
+### 2. **Capa de datos (`data/`)**
+Gestiona la comunicación con la base de datos:
+- **EventEntity.java** → Representación del evento en SQL Server.
+- **EventDao.java** → Acceso directo a la base de datos mediante SQL.
+- **EventMapper.java** → Conversión entre `EventEntity` y `Event`.
+- **JdbcEventRepository.java** → Implementación real del repositorio usando el DAO.
+
+### 3. **Capa de presentación (`presentation/`)**
+Expone la API HTTP:
+- **EventHandler.java** → Gestiona las peticiones GET, POST, PUT y DELETE.
+- Valida datos de entrada.
+- Construye respuestas JSON manualmente (sin librerías externas).
+- Aplica reglas de negocio como la propiedad del evento.
+
+---
+
+## ⚙️ Funcionamiento del módulo
+
+### ✔ Identificación del usuario
+Cada petición debe incluir la cabecera:
+***X-User-Id: <id_usuario>***
+
+## Esto permite:
+- Asociar nuevos eventos al usuario.
+- Filtrar eventos en las consultas.
+- Impedir el acceso a eventos ajenos.
+
+### ✔ Creación de eventos
+El servidor recibe los datos del evento, valida que las fechas sean correctas y crea un nuevo registro en la base de datos.
+
+### ✔ Consulta de eventos
+El módulo permite:
+- Obtener todos los eventos del usuario.
+- Obtener un evento concreto por su ID.
+- Verificar que el evento pertenece al usuario antes de devolverlo.
+
+### ✔ Validación de fechas
+El modelo `Event` exige:
+- `startAt` y `endAt` obligatorios.
+- Formato `YYYY-MM-DDTHH:MM:SS`.
+- Conversión a `LocalDateTime`.
+
+Si los datos no cumplen estas reglas, se devuelve un error claro y consistente.
+
+### ✔ Respuestas JSON uniformes
+Todas las respuestas siguen el formato estándar definido en `ResponseContract`, incluyendo:
+- `status`
+- `service`
+- `timestamp`
+- `data` o `error`
+
+Esto garantiza coherencia en toda la API.
+
+---
+
+## 🧩 Resumen
+
+El módulo **Events** proporciona un sistema completo y seguro para gestionar eventos personales.  
+Su diseño por capas facilita el mantenimiento, la claridad del código y el cumplimiento de los requisitos del Sprint 7:
+
+- CRUD funcional
+- Validación estricta
+- Seguridad por usuario
+- Respuestas JSON manuales
+
+
+
 ## 🖥️ Cliente web
 
 📌 **Pendiente**:  

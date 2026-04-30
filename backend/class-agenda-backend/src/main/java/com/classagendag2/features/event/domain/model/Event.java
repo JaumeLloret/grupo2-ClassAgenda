@@ -1,7 +1,6 @@
 package com.classagendag2.features.event.domain.model;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 
 public final class Event {
 
@@ -11,21 +10,39 @@ public final class Event {
     private final String status;
     private final String priority;
     private final String location;
-    private final LocalDateTime startAt;
-    private final LocalDateTime endAt;
+    private final LocalDateTime start_at;
+    private final LocalDateTime end_at;
     private final int owner_id;
-    private final LocalDateTime createdAt;
+    private final LocalDateTime created_at;
 
-    public Event(Long id, String title, String description, String status, String priority, String location, LocalDateTime startAt, LocalDateTime endAt, int owner_id, LocalDateTime createdAt) {
+    public Event(
+            String title,
+            String description,
+            String location,
+            LocalDateTime startAt,
+            LocalDateTime endAt,
+            Long ownerId,
+            LocalDateTime createdAt
+    ) {
+        validateDates(startAt, endAt);
         validateTitle(title);
-        validateDescription(description);
-        validateStatus(status);
-        validatePriority(priority);
-        ValidateLocation(location);
-        ValidateStartAt(startAt);
-        ValidateEndAt(endAt);
-        validateOwner_id(owner_id);
-        validateCreateAt(createdAt);
+
+        this.id = null; // evento nuevo
+        this.title = title;
+        this.description = description;
+        this.status = null;     // no se usa en Sprint 7
+        this.priority = null;   // no se usa en Sprint 7
+        this.location = location;
+        this.start_at = startAt;
+        this.end_at = endAt;
+        this.owner_id = ownerId.intValue();
+        this.created_at = createdAt;
+    }
+
+
+    public Event(Long id, String title, String description, String status, String priority, String location, LocalDateTime start_at, LocalDateTime end_at, int owner_id, LocalDateTime created_at) {
+        validateDates(start_at, end_at); // Validación de intervalo temporal
+        validateTitle(title);
 
         this.id = id;
         this.title = title;
@@ -33,36 +50,42 @@ public final class Event {
         this.status = status;
         this.priority = priority;
         this.location = location;
-        this.startAt = startAt;
-        this.endAt = endAt;
+        this.start_at = start_at;
+        this.end_at = end_at;
         this.owner_id = owner_id;
-        this.createdAt = createdAt;
+        this.created_at = created_at;
     }
 
-    /* VER QUE NOS HACE FALTA VALIDAR */
-    private void ValidateEndAt(LocalDateTime endAt) {
-    }
 
-    private void ValidateStartAt(LocalDateTime startAt) {
-    }
-
-    private void ValidateLocation(String location) {
-    }
-
-    private void validateOwner_id(int ownerId) {
-    }
-
-    private void validatePriority(String priority) {
-    }
-
-    private void validateStatus(String status) {
-    }
-
-    private void validateDescription(String description) {
+    private void validateDates(LocalDateTime start, LocalDateTime end) {
+        if (start == null || end == null) {
+            throw new IllegalArgumentException("Las fechas de inicio y fin son obligatorias.");
+        }
+        // REGLA DE ORO: El fin no puede ser anterior al inicio.
+        if (end.isBefore(start)) {
+            throw new IllegalArgumentException("La fecha de fin no puede ser anterior a la de inicio.");
+        }
+        // REGLA EXTRA: Un evento no puede durar 0 segundos.
+        if (end.isEqual(start)) {
+            throw new IllegalArgumentException("El evento debe tener una duración mínima.");
+        }
     }
 
     private void validateTitle(String title) {
+        if (title == null || title.isBlank()) throw new IllegalArgumentException("El título es obligatorio.");
     }
+
+    //geters para que el mapper no reviente
+    public Long getId() { return id; }
+    public String getTitle() { return title; }
+    public String getDescription() { return description; }
+    public String getStatus() { return status; }
+    public String getPriority() { return priority; }
+    public String getLocation() { return location; }
+    public LocalDateTime getStart_at() { return start_at; }
+    public LocalDateTime getEnd_at() { return end_at; }
+    public int getOwner_id() { return owner_id; }
+    public LocalDateTime getCreated_at() { return created_at; }
 
 
     //2. Constructor PARA NUEVOS USUARIOS: Se usa cuando alguien se registra de cero
@@ -92,46 +115,5 @@ public final class Event {
     }*/
 
 
-    private void validateCreateAt(LocalDateTime dateToValidate) {
-        if (dateToValidate == null) {
-            throw new IllegalArgumentException("La fecha de creación no puede ser nula");
-        }
-    }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public String getPriority() {
-        return priority;
-    }
-
-    public int getOwner_id() {
-        return owner_id;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public String getLocation() { return location;
-    }
-
-    public LocalDateTime getStartAt() { return startAt;
-    }
-
-    public LocalDateTime getEndAt() { return endAt;
-    }
 }

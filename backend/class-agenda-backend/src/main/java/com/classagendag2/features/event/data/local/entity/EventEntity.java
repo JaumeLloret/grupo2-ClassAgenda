@@ -10,26 +10,26 @@ public final class EventEntity {
     private String status;
     private String priority;
     private String location;
-    private LocalDateTime startAt;
-    private LocalDateTime endAt;
+    private LocalDateTime start_at;
+    private LocalDateTime end_at;
     private int owner_id;
-    private LocalDateTime createdAt;
+    private LocalDateTime created_at;
 
     // Constructor vacío: Absolutamente necesario para que frameworks de BD puedan instanciarlo
     public EventEntity() {}
 
     // Constructor completo para cuando queremos rellenarlo de golpe
-    public EventEntity(Long id, String title, String description, String status, String priority, String location, LocalDateTime startAt, LocalDateTime endAt, int owner_id,  LocalDateTime createdAt) {
+    public EventEntity(Long id, String title, String description, String status, String priority, String location, LocalDateTime start_at, LocalDateTime end_at, int owner_id,  LocalDateTime created_at) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.status = status;
         this.priority = priority;
         this.location = location;
-        this.startAt = startAt;
-        this.endAt = endAt;
+        this.start_at = start_at;
+        this.end_at = end_at;
         this.owner_id = owner_id;
-        this.createdAt = createdAt;
+        this.created_at = created_at;
     }
 
     public Long getId() {
@@ -80,20 +80,20 @@ public final class EventEntity {
         this.location = location;
     }
 
-    public LocalDateTime getStartAt() {
-        return startAt;
+    public LocalDateTime getStart_at() {
+        return start_at;
     }
 
-    public void setStartAt(LocalDateTime startAt) {
-        this.startAt = startAt;
+    public void setStart_at(LocalDateTime start_at) {
+        this.start_at = start_at;
     }
 
-    public LocalDateTime getEndAt() {
-        return endAt;
+    public LocalDateTime getEnd_at() {
+        return end_at;
     }
 
-    public void setEndAt(LocalDateTime endAt) {
-        this.endAt = endAt;
+    public void setEnd_at(LocalDateTime end_at) {
+        this.end_at = end_at;
     }
 
     public int getOwner_id() {
@@ -104,11 +104,11 @@ public final class EventEntity {
         this.owner_id = owner_id;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public LocalDateTime getCreated_at() {
+        return created_at;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setCreated_at(LocalDateTime created_at) {
+        this.created_at = created_at;
     }
 }

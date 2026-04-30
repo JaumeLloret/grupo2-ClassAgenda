@@ -35,14 +35,26 @@ public final class JdbcEventRepository implements EventRepository {
     }
 
     @Override
-    public Optional<Event> findByEmail(String email) {
-        return Optional.empty();
+    public List<Event> findAllByOwner(Long ownerId) {
+        List<EventEntity> entityList = eventDao.findAllByOwner(ownerId);
+
+        return entityList.stream()
+                .map(EventMapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override
     public Optional<Event> findById(Long id) {
-        return Optional.empty();
+        EventEntity entity = eventDao.findById(id);
+        return Optional.ofNullable(entity).map(EventMapper::toDomain);
     }
+
+
+    @Override
+    public void deleteById(Long id) {
+        eventDao.deleteById(id);
+    }
+
 
     /*@Override
     public Optional<Event> findByEmail(String email) {
@@ -66,11 +78,6 @@ public final class JdbcEventRepository implements EventRepository {
         return entityList.stream()
                 .map(EventMapper::toDomain)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public void deleteById(Long id) {
-
     }
 
     /*@Override

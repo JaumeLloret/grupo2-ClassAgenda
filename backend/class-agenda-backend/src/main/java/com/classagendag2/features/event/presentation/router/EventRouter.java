@@ -14,21 +14,18 @@ public final class EventRouter {
 
     public static void registerRoutes(HttpServer httpServer) {
 
-        // 1. Crear la fábrica de conexiones
         DbConnectionFactory connectionFactory = new DbConnectionFactory();
 
-        // 2.  Crear el Dao con la fábrica
-        EventDao eventDao = null;
+        EventDao eventDao;
         try {
             eventDao = new EventDao(connectionFactory.open());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
-        // 3. Crear el repositorio con el DAO
         EventRepository eventRepository = new JdbcEventRepository(eventDao);
 
-        // 4.  Registar la ruta en el DAO
-        httpServer.createContext("/event/",new EventHandler(eventRepository));
+        httpServer.createContext("/event", new EventHandler(eventRepository));
+        httpServer.createContext("/event/", new EventHandler(eventRepository));
     }
 }

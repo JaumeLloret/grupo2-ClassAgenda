@@ -6,18 +6,13 @@ import java.util.Optional;
 
 public interface EventRepository {
 
-    // Si el usuario es nuevo lo guarda. Si ya existe, lo actualiza.
     Event save(Event event);
 
-    // Devuelve una caja que puede contener al usuario buscado por correo
-    Optional<Event> findByEmail(String email);
+    List<Event> findAllByOwner(Long ownerId);
 
-    // Devuelve una caja que puede contener al usuario buscado por ID numérico
     Optional<Event> findById(Long id);
 
-    // Devuelve una lista con todos los usuarios (si no hay ninguno, devolverá una lista vacía)
     List<Event> findAll();
 
-    // Elimina al usuario indicado
     void deleteById(Long id);
 }

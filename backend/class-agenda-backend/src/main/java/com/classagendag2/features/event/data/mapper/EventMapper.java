@@ -20,10 +20,10 @@ public final class EventMapper {
                 event.getStatus(),
                 event.getPriority(),
                 event.getLocation(),
-                event.getStartAt(),
-                event.getEndAt(),
+                event.getStart_at(),
+                event.getEnd_at(),
                 event.getOwner_id(),
-                event.getCreatedAt()
+                event.getCreated_at()
         );
     }
 
@@ -38,10 +38,10 @@ public final class EventMapper {
                 entity.getStatus(),
                 entity.getPriority(),
                 entity.getLocation(),
-                entity.getStartAt(),
-                entity.getEndAt(),
+                entity.getStart_at(),
+                entity.getEnd_at(),
                 entity.getOwner_id(),
-                entity.getCreatedAt()
+                entity.getCreated_at()
         );
     }
 }
