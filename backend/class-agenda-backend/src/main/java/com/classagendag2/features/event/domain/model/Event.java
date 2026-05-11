@@ -87,6 +87,13 @@ public final class Event {
     public int getOwner_id() { return owner_id; }
     public LocalDateTime getCreated_at() { return created_at; }
 
+    public void validateIsOwnedBy(Long requestingUserId) {
+        if (this.owner_id != requestingUserId.intValue()) {
+            throw new SecurityException("No eres el dueño del evento");
+        }
+    }
+
+
 
     //2. Constructor PARA NUEVOS USUARIOS: Se usa cuando alguien se registra de cero
     /*public Event(String name, String email) {

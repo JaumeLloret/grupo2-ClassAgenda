@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public final class JdbcEventRepository implements EventRepository {
+public class JdbcEventRepository implements EventRepository {
     private final EventDao eventDao;
 
     // Inyectamos el DAO en el constructor
@@ -47,6 +47,11 @@ public final class JdbcEventRepository implements EventRepository {
     public Optional<Event> findById(Long id) {
         EventEntity entity = eventDao.findById(id);
         return Optional.ofNullable(entity).map(EventMapper::toDomain);
+    }
+
+    @Override
+    public void update(Event event) {
+
     }
 
 

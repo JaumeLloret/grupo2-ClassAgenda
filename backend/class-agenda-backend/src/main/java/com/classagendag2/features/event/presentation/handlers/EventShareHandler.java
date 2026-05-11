@@ -61,16 +61,23 @@ public final class EventShareHandler implements HttpHandler {
     }
 
     private void shareEvent(HttpExchange exchange, Long eventId) throws IOException {
-        // En una API real usaríamos Jackson. Aquí simulamos la lectura del DTO.
-        // Supongamos que leemos el JSON {"targetUserId": 2, "permission": "READ"}
         String body = new String(exchange.getRequestBody().readAllBytes());
-        Long targetUser = Long.parseLong(body.split("\"targetUserId\":")[1].split(",")[0].trim());
-        String permStr = body.split("\"permission\":\"")[1].split("\"")[0];
 
+        // Normalizamos el JSON eliminando espacios, saltos de línea, tabulaciones...
+        String clean = body.replaceAll("\\s+", "");
+
+        // targetUserId
+        String targetUserStr = clean.split("\"targetUserId\":")[1].split("[,}]")[0];
+        Long targetUser = Long.parseLong(targetUserStr);
+
+        // permission
+        String permStr = clean.split("\"permission\":\"")[1].split("\"")[0];
         PermissionLevel level = PermissionLevel.valueOf(permStr.toUpperCase());
+
 
         eventShareDao.upsertShare(eventId, targetUser, level);
         JsonResponses.sendJson(exchange, 200, ResponseContract.okJson("{\"message\":\"Evento compartido\"}"));
+
     }
 
     private void revokeShare(HttpExchange exchange, Long eventId) throws IOException {
@@ -81,4 +88,18 @@ public final class EventShareHandler implements HttpHandler {
         eventShareDao.deleteShare(eventId, targetUser);
         JsonResponses.sendJson(exchange, 200, ResponseContract.okJson("{\"message\":\"Permisos revocados\"}"));
     }
+    private String extract(String json, String key) {
+        String clean = json.replaceAll("\\s+", "");
+        String pattern = "\"" + key + "\":";
+        if (!clean.contains(pattern)) return null;
+
+        String after = clean.split(pattern)[1];
+        if (after.startsWith("\"")) {
+            return after.split("\"")[1];
+        } else {
+            return after.split("[,}]")[0];
+        }
+
+    }
+
 }

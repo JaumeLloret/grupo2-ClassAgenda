@@ -1,5 +1,7 @@
 package com.classagendag2.features.event.presentation.router;
 
+import com.classagendag2.features.event.data.local.dao.EventShareDao;
+import com.classagendag2.features.event.presentation.handlers.EventShareHandler;
 import com.classagendag2.features.example.data.local.connection.DbConnectionFactory;
 import com.classagendag2.features.event.data.local.dao.EventDao;
 import com.classagendag2.features.event.data.repository.JdbcEventRepository;
@@ -25,7 +27,17 @@ public final class EventRouter {
 
         EventRepository eventRepository = new JdbcEventRepository(eventDao);
 
-        httpServer.createContext("/event", new EventHandler(eventRepository));
-        httpServer.createContext("/event/", new EventHandler(eventRepository));
+        EventShareDao eventShareDao;
+        try {
+            eventShareDao = new EventShareDao(connectionFactory.open());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        httpServer.createContext("/event", new EventHandler(eventRepository, eventShareDao));
+        httpServer.createContext("/event/", new EventHandler(eventRepository, eventShareDao));
+        httpServer.createContext("/event/share", new EventShareHandler(eventRepository, eventShareDao));
+
     }
 }

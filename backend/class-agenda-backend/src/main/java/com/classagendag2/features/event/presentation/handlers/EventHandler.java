@@ -1,6 +1,8 @@
 package com.classagendag2.features.event.presentation.handlers;
 
+import com.classagendag2.features.event.data.local.dao.EventShareDao;
 import com.classagendag2.features.event.domain.model.Event;
+import com.classagendag2.features.event.domain.model.PermissionLevel;
 import com.classagendag2.features.event.domain.repository.EventRepository;
 import com.classagendag2.shared.http.JsonResponses;
 import com.classagendag2.shared.http.ResponseContract;
@@ -13,16 +15,23 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public final class EventHandler implements HttpHandler{
 
-    private final EventRepository eventRepository;
+    private final EventShareDao eventShareDao;
 
-
-    public EventHandler(EventRepository eventRepository) {
+    public EventHandler(EventRepository eventRepository, EventShareDao eventShareDao) {
         this.eventRepository = eventRepository;
+        this.eventShareDao = eventShareDao;
     }
+
+    private final EventRepository eventRepository;
+    private Long eventId;
+
+
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
 
@@ -34,7 +43,7 @@ public final class EventHandler implements HttpHandler{
             String httpMethod = httpExchange.getRequestMethod();
             switch (httpMethod) {
                 case "GET" -> handleGet(httpExchange, ownerId); //Usamos el verbo GET (Dame información, solo quiero consultar).
-                case "PUT" -> sendOk(httpExchange, "PUT event"); // Usamos PUT (Reemplaza este dato por completo)
+                case "PUT" -> handlePut(httpExchange, ownerId);
                 case "POST" -> handlePost(httpExchange, ownerId);
                 case "PATCH" -> sendOk(httpExchange, "PATCH event"); //PATCH (Modifica solo una pequeña parte del dato).
                 case "DELETE" -> sendOk(httpExchange, "DELETE event"); //Usamos el verbo DELETE (Elimina este dato de la base de datos).
@@ -63,7 +72,7 @@ public final class EventHandler implements HttpHandler{
                 return;
             }
 
-            Long eventId;
+            long eventId;
             try {
                 eventId = Long.parseLong(parts[2]);
             } catch (NumberFormatException e) {
@@ -91,6 +100,73 @@ public final class EventHandler implements HttpHandler{
 
         sendError(exchange, 404, "Ruta no encontrada");
     }
+
+    private void handlePut(HttpExchange exchange, Long requestingUserId) throws Exception {
+
+        // 1. Extraer ID del evento desde la URL
+        String path = exchange.getRequestURI().getPath();
+        Long eventId = Long.parseLong(path.substring(path.lastIndexOf("/") + 1));
+
+        // 2. Buscar el evento en BD
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new RuntimeException("Evento no encontrado"));
+
+        // 3. Validación de permisos
+        boolean hasAccess = false;
+
+        // 3.1 ¿Es el dueño?
+        if (Objects.equals(event.getOwner_id(), requestingUserId)) {
+            hasAccess = true;
+        } else {
+            // 3.2 ¿Tiene permiso EDIT?
+            Optional<PermissionLevel> perm =
+                    eventShareDao.getPermissionLevel(eventId, requestingUserId);
+
+            if (perm.isPresent() && perm.get() == PermissionLevel.EDIT) {
+                hasAccess = true;
+            }
+        }
+
+        if (!hasAccess) {
+            sendError(exchange, 403, "No tienes permisos suficientes para editar este evento.");
+            return;
+        }
+
+        // 4. Leer body
+        String json = readRequestBody(exchange);
+
+        // 5. Extraer campos usando tu propio método extractField
+        String title = extractField(json, "title");
+        String description = extractField(json, "description");
+        String location = extractField(json, "location");
+        String rawStart = extractField(json, "startAt");
+        String rawEnd = extractField(json, "endAt");
+
+        LocalDateTime startAt = LocalDateTime.parse(rawStart);
+        LocalDateTime endAt = LocalDateTime.parse(rawEnd);
+
+        // 6. Construir evento actualizado usando tu constructor real
+        Event updatedEvent = new Event(
+                event.getId(),
+                title,
+                description,
+                event.getStatus(),
+                event.getPriority(),
+                location,
+                startAt,
+                endAt,
+                event.getOwner_id(),
+                event.getCreated_at()
+        );
+
+        // 7. Guardar cambios
+        eventRepository.update(updatedEvent);
+
+        // 8. Responder OK
+        JsonResponses.sendJson(exchange, 200, ResponseContract.okJson("{\"message\":\"Evento actualizado correctamente\"}"));
+    }
+
+
 
     private String eventToJson(Event e) {
         return """
