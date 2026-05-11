@@ -52,18 +52,18 @@ CREATE TABLE TASKS (
 -- TABLE: EVENT_SHARES
 -- =========================================
 CREATE TABLE EVENT_SHARES (
-	event_id INT NOT NULL,
-	shared_with_user_id INT NOT NULL,
-	permission VARCHAR(6) NOT NULL,
-	shared_at DATETIME NOT NULL DEFAULT GETDATE(),
+    event_id INT NOT NULL,
+    user_id INT NOT NULL,
+    permission_level VARCHAR(20) NOT NULL,
+    created_at DATETIME NOT NULL,
 
-	PRIMARY KEY (event_id, shared_with_user_id),
+    -- La unión de ambos IDs es la Clave Primaria.
+    -- Esto garantiza (Idempotencia) que no podamos invitar al usuario 5 al evento 10 dos veces.
+    PRIMARY KEY (event_id, user_id),
 
-	CONSTRAINT fk_eventshares_event
-		FOREIGN KEY (event_id) REFERENCES [EVENTS](id),
-
-	CONSTRAINT fk_eventshares_user
-		FOREIGN KEY (shared_with_user_id) REFERENCES USERS(id)
+    -- Si el evento original se borra, se borran sus comparticiones automáticamente
+    CONSTRAINT FK_Share_Event FOREIGN KEY (event_id) REFERENCES EVENTS(id) ON DELETE CASCADE,
+    CONSTRAINT FK_Share_User FOREIGN KEY (user_id) REFERENCES USERS(id)
 );
 
 -- ===========================================
