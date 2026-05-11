@@ -369,7 +369,7 @@ public enum TaskStatus {
 ```java
 public enum TaskPriority {
     LOW,
-    MEDIUM,
+    MED,
     HIGH
 }
 ```
@@ -558,16 +558,210 @@ Esto garantiza coherencia en toda la API.
 
 ---
 
-## 🧩 Resumen
 
-El módulo **Events** proporciona un sistema completo y seguro para gestionar eventos personales.  
-Su diseño por capas facilita el mantenimiento, la claridad del código y el cumplimiento de los requisitos del Sprint 7:
+## 📘 Colaboración: TASK_SHARES y EVENT_SHARES
 
-- CRUD funcional
-- Validación estricta
-- Seguridad por usuario
-- Respuestas JSON manuales
+## 📌 Descripción general
 
+El sistema de colaboración permite que un usuario propietario (OWNER) comparta sus tareas y eventos con otros usuarios, asignándoles un nivel de permiso concreto.
+
+Los niveles de permiso son:
+
+- OWNER: acceso total (no se guarda en las tablas de compartición)
+- EDIT: puede consultar y modificar
+- READ: solo lectura
+
+Esta colaboración se implementa mediante tablas intermedias (`TASK_SHARES` y `EVENT_SHARES`) y se integra con los handlers existentes para aplicar las reglas de acceso en los endpoints de la API.
+
+---
+
+## 📂 Contenido del módulo de colaboración
+
+### 1. Capa de dominio (`domain/`)
+
+Contiene la lógica central de permisos y compartición:
+
+- PermissionLevel.java → Enum que define los niveles READ y EDIT.
+- TaskShare.java → Modelo de dominio que representa la compartición de una tarea.
+- EventShare.java → Modelo de dominio que representa la compartición de un evento.
+- TaskShareRepository.java → Interfaz para operaciones de compartición de tareas.
+- EventShareRepository.java → Interfaz para operaciones de compartición de eventos.
+
+### 2. Capa de datos (`data/`)
+
+Gestiona la comunicación con las tablas intermedias de base de datos.
+
+Tablas intermedias:
+
+- TASK_SHARES
+- EVENT_SHARES
+
+Estructura general:
+
+\`\`\`sql
+resource_id      -- task_id o event_id según el caso
+user_id          -- usuario invitado
+permission_level -- READ o EDIT
+created_at       -- fecha de creación de la invitación
+\`\`\`
+
+---
+
+## ⚙️ Funcionamiento del sistema de permisos
+
+### Identificación del usuario
+
+Todas las peticiones que acceden a tareas o eventos deben incluir la cabecera:
+
+\`\`\`
+X-User-Id: <id_usuario>
+\`\`\`
+
+Con esta cabecera se determina si el usuario es:
+
+- Propietario (OWNER) del recurso.
+- Invitado con permiso READ.
+- Invitado con permiso EDIT.
+- Un usuario sin acceso.
+
+---
+
+### Reglas de autorización
+
+Para cada operación sobre una tarea o evento:
+
+- GET
+  - Permitido para OWNER.
+  - Permitido para usuarios con permiso READ o EDIT.
+
+- PUT
+  - Permitido para OWNER.
+  - Permitido para usuarios con permiso EDIT.
+
+- DELETE
+  - Reservado al OWNER.
+
+Si el usuario no cumple las condiciones de permiso, el sistema devuelve un error (403 Forbidden).
+
+---
+
+### Resumen de comportamiento esperado
+
+- Un usuario OWNER puede:
+  - Compartir una tarea o evento con otros usuarios.
+  - Cambiar el nivel de permiso (READ ↔ EDIT).
+  - Revocar el acceso.
+  - Realizar GET, PUT y DELETE sobre sus recursos.
+
+- Un usuario con permiso EDIT puede:
+  - Realizar GET y PUT sobre la tarea o evento compartido.
+  - No puede realizar DELETE.
+  - No puede volver a compartir el recurso.
+
+- Un usuario con permiso READ puede:
+  - Realizar GET sobre la tarea o evento compartido.
+  - No puede realizar PUT ni DELETE.
+  - No puede volver a compartir el recurso.
+
+- Un usuario sin permisos:
+  - No puede acceder al recurso (GET, PUT, DELETE devuelven error de autorización).
+
+---
+
+## 🗂️ EventShare — Compartición de eventos
+
+El módulo EventShare permite que el propietario de un evento pueda compartirlo con otros usuarios, asignando permisos READ o EDIT, así como revocar dichos permisos.  
+La validación de propietario se realiza en el dominio mediante validateIsOwnedBy().
+
+---
+
+## 📌 Endpoints principales
+
+### 1. Compartir un evento
+
+POST /event/share?eventId={id}
+
+Headers:
+\`\`\`
+X-User-Id: {ownerId}
+Content-Type: application/json
+\`\`\`
+
+Body:
+\`\`\`json
+{
+"targetUserId": 2,
+"permission": "READ"
+}
+\`\`\`
+
+Respuesta (200 OK):
+\`\`\`json
+{
+"status": "ok",
+"data": { "message": "Evento compartido" }
+}
+\`\`\`
+
+---
+
+### 2. Intento de compartir por usuario NO propietario
+
+POST /event/share?eventId={id}
+
+Headers:
+\`\`\`
+X-User-Id: {noOwnerId}
+Content-Type: application/json
+\`\`\`
+
+Body:
+\`\`\`json
+{
+"targetUserId": 3,
+"permission": "READ"
+}
+\`\`\`
+
+Respuesta (403 Forbidden):
+\`\`\`json
+{
+"status": "error",
+"error": {
+"message": "Prohibido",
+"details": "No eres el dueño del evento"
+}
+}
+\`\`\`
+
+---
+
+### 3. Revocar permisos
+
+DELETE /event/share?eventId={id}&targetUserId={userId}
+
+Headers:
+\`\`\`
+X-User-Id: {ownerId}
+\`\`\`
+
+Respuesta (200 OK):
+\`\`\`json
+{
+"status": "ok",
+"data": { "message": "Permisos revocados" }
+}
+\`\`\`
+
+---
+
+## 🧪 Pruebas realizadas sobre EventShare
+
+- Compartición correcta por parte del propietario.
+- Intento de compartición por usuario no autorizado (403).
+- Revocación de permisos correctamente aplicada.
+
+Estas pruebas demuestran el correcto funcionamiento del módulo EventShare, incluyendo seguridad, persistencia y gestión completa del ciclo de permisos.
 
 
 ## 🖥️ Cliente web
