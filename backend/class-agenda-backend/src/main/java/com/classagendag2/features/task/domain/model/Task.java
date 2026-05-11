@@ -4,13 +4,30 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 public final class Task {
-    private final Long id;
-    private final String title;
-    private final String description;
-    private final TaskStatus status;
-    private final TaskPriority priority;
+    private  Long id;
+    private  String title;
+    private  String description;
+    private  TaskStatus status;
+    private  TaskPriority priority;
     private final Long ownerId;
     private final LocalDateTime createdAt;
+    public void setTitle(String title) {
+        validateTitle(title);
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setStatus(TaskStatus status) {
+        this.status = status;
+    }
+
+    public void setPriority(TaskPriority priority) {
+        this.priority = priority;
+    }
+
 
     // Constructor 1: Para reconstruir datos que vienen de la Base de Datos
     public Task(Long id, String title, String description, TaskStatus status, TaskPriority priority, Long ownerId, LocalDateTime createdAt) {

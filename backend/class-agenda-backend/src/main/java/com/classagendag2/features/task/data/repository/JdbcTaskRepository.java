@@ -18,6 +18,14 @@ public final class JdbcTaskRepository implements TaskRepository {
     public JdbcTaskRepository(TaskDao taskDao) {
         this.taskDao = taskDao;
     }
+    @Override
+    public void update(Task task) {
+        // Convertimos el dominio a entidad
+        TaskEntity entity = TaskMapper.toEntity(task);
+
+        // Llamamos al DAO para actualizar en BD
+        taskDao.update(entity);
+    }
 
     @Override
     public Task save(Task task) {
@@ -57,5 +65,10 @@ public final class JdbcTaskRepository implements TaskRepository {
         return taskDao.findByOwnerIdAndStatus(ownerId, status.name()).stream()
                 .map(TaskMapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean hasSharePermission(Long taskId, Long requestingUserId) {
+        return false;
     }
 }

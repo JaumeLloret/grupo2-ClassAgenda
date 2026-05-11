@@ -127,6 +127,7 @@ public final class TaskHandler implements HttpHandler {
         jsonArray.append("]");
 
         JsonResponses.sendJson(exchange, 200, ResponseContract.okJson(jsonArray.toString()));
+
     }
 
     private void handleDelete(HttpExchange exchange, Long requestingUserId) throws Exception {
@@ -155,9 +156,49 @@ public final class TaskHandler implements HttpHandler {
     }
 
     private void handlePut(HttpExchange exchange, Long requestingUserId) throws Exception {
-        // Implementación similar: Buscar, Validar Propiedad (validateIsOwnedBy), Leer JSON y Guardar (taskRepository.save).
-        // (La lógica es un híbrido entre el POST y el DELETE. Se deja como ejercicio final ensamblarla).
-        JsonResponses.sendJson(exchange, 200, ResponseContract.okJson("{\"message\":\"Endpoint PUT listo para implementar\"}"));
+
+        // 1. Extraer ID desde query param (?id=1)
+        String query = exchange.getRequestURI().getQuery();
+        if (query == null || !query.contains("id=")) {
+            JsonResponses.sendJson(exchange, 400, ResponseContract.errorJson("Bad Request", "Debe proporcionar ?id=X"));
+            return;
+        }
+
+        Long taskId = Long.parseLong(query.split("id=")[1].split("&")[0]);
+
+        // 2. Buscar la tarea
+        Optional<Task> optTask = taskRepository.findById(taskId);
+        if (optTask.isEmpty()) {
+            JsonResponses.sendJson(exchange, 404, ResponseContract.errorJson("No encontrado", "La tarea no existe"));
+            return;
+        }
+
+        Task task = optTask.get();
+
+        // 3. Validar propiedad
+        task.validateIsOwnedBy(requestingUserId);
+
+        // 4. Leer body
+        String json = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+
+        // 5. Extraer campos
+        String title = extractJsonField(json, "title");
+        String description = extractJsonField(json, "description");
+        String priorityStr = extractJsonField(json, "priority");
+        String statusStr = extractJsonField(json, "status");
+
+        // 6. Actualizar valores (solo si vienen en el JSON)
+        if (!title.isBlank()) task.setTitle(title);
+        if (!description.isBlank()) task.setDescription(description);
+        if (!priorityStr.isBlank()) task.setPriority(TaskPriority.valueOf(priorityStr.toUpperCase()));
+        if (!statusStr.isBlank()) task.setStatus(TaskStatus.valueOf(statusStr.toUpperCase()));
+
+        // 7. Guardar cambios
+        taskRepository.update(task);
+
+        // 8. Respuesta
+        JsonResponses.sendJson(exchange, 200, ResponseContract.okJson("{\"message\":\"Tarea actualizada correctamente\"}"));
     }
+
 }
 

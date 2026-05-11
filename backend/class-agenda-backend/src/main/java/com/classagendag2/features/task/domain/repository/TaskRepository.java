@@ -8,6 +8,8 @@ import java.util.Optional;
 // IMPORTANTE: En la convención moderna de Java, las interfaces no llevan una 'I' delante.
 // Se llaman por su nombre puro (TaskRepository) y la implementación llevará el detalle técnico.
 public interface TaskRepository {
+    void update(Task task);
+
     Task save(Task task);
 
     // La clase Optional actúa como una "caja de seguridad". Evita que el programa explote
@@ -19,4 +21,6 @@ public interface TaskRepository {
     // --- FILTROS DE NEGOCIO ---
     List<Task> findByOwnerId(Long ownerId);
     List<Task> findByOwnerIdAndStatus(Long ownerId, TaskStatus status);
+
+    boolean hasSharePermission(Long taskId, Long requestingUserId);
 }
